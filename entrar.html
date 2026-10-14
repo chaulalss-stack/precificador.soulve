@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Entrar | Precificador Multicanal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#F2F5F2;--surface:#fff;--surface-2:#E8EEE9;--ink:#15201C;--ink-2:#4B5B54;--line:#D3DCD5;--accent:#0E6B58;--accent-ink:#fff;--accent-soft:#D6EDE5;--bad:#A92D1D;--bad-soft:#F7DBD5;--good:#1C7A4A;--good-soft:#D8F0E2;--warn-soft:#FBEBCC;
+--f-display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;--f-body:'Figtree',ui-sans-serif,system-ui,sans-serif}
+@media (prefers-color-scheme:dark){:root{color-scheme:dark;--bg:#0E1512;--surface:#151E1A;--surface-2:#1D2924;--ink:#E4EEE9;--ink-2:#9DB2A9;--line:#2A3833;--accent:#4CC2A4;--accent-ink:#06231C;--accent-soft:#17352D;--bad:#F08A78;--bad-soft:#3C1F1A;--good:#5CD09A;--good-soft:#163526;--warn-soft:#3A2D14}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 15px/1.5 var(--f-body);min-height:100vh;display:grid;place-items:center;padding:24px 16px}
+.wrap{width:100%;max-width:400px}
+.brand{display:flex;align-items:center;gap:10px;margin-bottom:18px;text-decoration:none;color:var(--ink);font:700 20px var(--f-display)}
+.brand i{display:grid;place-items:center;width:34px;height:34px;border-radius:9px;background:var(--accent);color:var(--accent-ink);font:700 18px var(--f-display);font-style:normal}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:24px}
+h1{font:700 22px/1.2 var(--f-display);margin:0 0 4px}
+.lead{color:var(--ink-2);margin:0 0 16px}
+label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px}
+input{width:100%;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font:inherit}
+input:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{width:100%;margin-top:16px;background:var(--accent);color:var(--accent-ink);border:0;border-radius:8px;padding:11px 14px;font:700 15px var(--f-body);cursor:pointer}
+.btn:disabled{opacity:.6;cursor:wait}
+.link{background:none;border:0;color:var(--accent);font:600 14px var(--f-body);cursor:pointer;padding:0;text-decoration:underline}
+.msg{margin:12px 0 0;padding:10px 12px;border-radius:8px;font-size:14px}
+.msg.err{background:var(--bad-soft);color:var(--bad)}
+.msg.ok{background:var(--good-soft);color:var(--good)}
+.msg.info{background:var(--accent-soft)}
+.msg a{color:inherit;font-weight:700}
+.foot{margin-top:16px;text-align:center;color:var(--ink-2);font-size:14px}
+.foot a{color:var(--accent);font-weight:600}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a class="brand" href="./"><i>P</i><span id="nome">Precificador Multicanal</span></a>
+  <div class="card">
+    <!-- entrar -->
+    <form id="f-login" novalidate>
+      <h1>Entrar</h1>
+      <p class="lead">Acesse a sua conta para ver os seus preços.</p>
+      <div id="m-login" class="msg" hidden role="alert"></div>
+      <label for="l-email">E-mail</label>
+      <input id="l-email" type="email" autocomplete="username" required>
+      <label for="l-senha">Senha</label>
+      <input id="l-senha" type="password" autocomplete="current-password" required>
+      <button class="btn" type="submit" id="b-login">Entrar</button>
+      <p class="foot" style="margin-bottom:0"><button type="button" class="link" id="go-forgot">Esqueci minha senha</button></p>
+    </form>
+    <!-- esqueci -->
+    <form id="f-forgot" hidden novalidate>
+      <h1>Esqueci minha senha</h1>
+      <p class="lead">Digite o e-mail da sua assinatura. Enviamos um link para criar uma nova senha.</p>
+      <div id="m-forgot" class="msg" hidden role="alert"></div>
+      <label for="f-email">E-mail</label>
+      <input id="f-email" type="email" autocomplete="username" required>
+      <button class="btn" type="submit" id="b-forgot">Enviar link</button>
+      <p class="foot" style="margin-bottom:0"><button type="button" class="link" id="go-login">Voltar para entrar</button></p>
+    </form>
+    <!-- nova senha -->
+    <form id="f-reset" hidden novalidate>
+      <h1>Criar nova senha</h1>
+      <p class="lead">Escolha uma senha com pelo menos 8 caracteres.</p>
+      <div id="m-reset" class="msg" hidden role="alert"></div>
+      <label for="r-nova">Nova senha</label>
+      <input id="r-nova" type="password" autocomplete="new-password" minlength="8" required>
+      <label for="r-nova2">Repita a nova senha</label>
+      <input id="r-nova2" type="password" autocomplete="new-password" minlength="8" required>
+      <button class="btn" type="submit" id="b-reset">Salvar nova senha</button>
+    </form>
+  </div>
+  <p class="foot" id="foot-assinar">Ainda não é assinante? <a id="a-assinar" href="./">Conheça e assine</a></p>
+</div>
+<script src="config.js"></script>
+<script>
+(function(){
+'use strict';
+var CFG=window.PREC_CONFIG||{}; var API=String(CFG.API_BASE||'').replace(/\/$/,'');
+var $=function(id){ return document.getElementById(id); };
+if(CFG.NOME){ $('nome').textContent=CFG.NOME; document.title='Entrar | '+CFG.NOME; }
+var qs=new URLSearchParams(location.search);
+function show(which){ ['login','forgot','reset'].forEach(function(n){ $('f-'+n).hidden=(n!==which); }); $('foot-assinar').hidden=(which==='reset'); }
+function msg(id,kind,text,html){ var m=$(id); m.hidden=!text; m.className='msg '+kind; if(html) m.innerHTML=text; else m.textContent=text||''; }
+async function api(path,body){
+  var r=await fetch(API+'/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('http '+r.status);
+  return r.json();
+}
+var NET='Não consegui falar com o servidor. Verifique a internet e tente de novo.';
+
+// avisos vindos de outras páginas
+if(qs.get('expirou')) msg('m-login','info','Sua sessão expirou. Entre de novo.');
+if(qs.get('saiu')) msg('m-login','ok','Você saiu da sua conta.');
+// modo "nova senha" (link do e-mail)
+var resetTok=qs.get('reset');
+if(resetTok) show('reset');
+// já está logado? vai direto para o sistema
+(async function(){
+  var t=''; try{ t=localStorage.getItem('prec_token')||''; }catch(e){}
+  if(!t||resetTok) return;
+  try{ var r=await api('me',{token:t}); if(r&&r.ok) location.replace('app/'); }catch(e){}
+})();
+
+$('go-forgot').addEventListener('click',function(){ $('f-email').value=$('l-email').value; show('forgot'); });
+$('go-login').addEventListener('click',function(){ show('login'); });
+$('a-assinar').href=CFG.CHECKOUT_URL&&CFG.CHECKOUT_URL.indexOf('SEU_PLANO')<0?CFG.CHECKOUT_URL:'./#preco';
+
+$('f-login').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var email=$('l-email').value.trim(), senha=$('l-senha').value;
+  if(!email||!senha){ msg('m-login','err','Preencha o e-mail e a senha.'); return; }
+  $('b-login').disabled=true; msg('m-login','info','Entrando…');
+  try{
+    var r=await api('login',{email:email,password:senha});
+    if(r.ok){ try{ localStorage.setItem('prec_token',r.token); }catch(x){} location.replace('app/'); return; }
+    if(r.error==='assinatura_inativa'){
+      var link=(CFG.CHECKOUT_URL&&CFG.CHECKOUT_URL.indexOf('SEU_PLANO')<0)?CFG.CHECKOUT_URL:'./#preco';
+      msg('m-login','err','Sua assinatura não está ativa. <a href="'+link+'">Assine ou regularize o pagamento</a> para voltar a entrar. Os seus dados continuam guardados.',true);
+    } else if(r.error==='muitas_tentativas') msg('m-login','err','Muitas tentativas erradas. Aguarde 15 minutos e tente de novo, ou use “Esqueci minha senha”.');
+    else msg('m-login','err','E-mail ou senha incorretos.');
+  }catch(err){ msg('m-login','err',NET); }
+  $('b-login').disabled=false;
+});
+$('f-forgot').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var email=$('f-email').value.trim(); if(!email){ msg('m-forgot','err','Digite o seu e-mail.'); return; }
+  $('b-forgot').disabled=true;
+  try{ await api('request-reset',{email:email}); msg('m-forgot','ok','Se esse e-mail tiver uma assinatura ativa, enviamos um link para criar uma nova senha. Ele vale por 1 hora. Confira também a caixa de spam.'); }
+  catch(err){ msg('m-forgot','err',NET); }
+  $('b-forgot').disabled=false;
+});
+$('f-reset').addEventListener('submit',async function(e){
+  e.preventDefault();
+  var a=$('r-nova').value, b=$('r-nova2').value;
+  if(a.length<8){ msg('m-reset','err','A senha precisa ter pelo menos 8 caracteres.'); return; }
+  if(a!==b){ msg('m-reset','err','As duas senhas não são iguais.'); return; }
+  $('b-reset').disabled=true;
+  try{
+    var r=await api('do-reset',{reset_token:resetTok,new_password:a});
+    if(r.ok){ history.replaceState(null,'','entrar.html'); show('login'); msg('m-login','ok','Senha alterada. Entre com a nova senha.'); }
+    else msg('m-reset','err',r.error==='link_invalido'?'Este link é inválido ou já expirou. Volte e peça um novo em “Esqueci minha senha”.':'Não foi possível trocar a senha.');
+  }catch(err){ msg('m-reset','err',NET); }
+  $('b-reset').disabled=false;
+});
+})();
+</script>
+</body>
+</html>
