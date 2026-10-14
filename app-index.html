@@ -1,0 +1,1303 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Precificador Multicanal</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F2F5F2; --surface:#FFFFFF; --surface-2:#E8EEE9; --ink:#15201C; --ink-2:#4B5B54; --line:#D3DCD5;
+  --accent:#0E6B58; --accent-ink:#FFFFFF; --accent-soft:#D6EDE5;
+  --good:#1C7A4A; --good-soft:#D8F0E2; --warn:#8F5600; --warn-soft:#FBEBCC; --bad:#A92D1D; --bad-soft:#F7DBD5;
+  --f-display:'Bricolage Grotesque',ui-sans-serif,system-ui,sans-serif;
+  --f-body:'Figtree',ui-sans-serif,system-ui,sans-serif;
+  --f-mono:'IBM Plex Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0E1512; --surface:#151E1A; --surface-2:#1D2924; --ink:#E4EEE9; --ink-2:#9DB2A9; --line:#2A3833;
+    --accent:#4CC2A4; --accent-ink:#06231C; --accent-soft:#17352D;
+    --good:#5CD09A; --good-soft:#163526; --warn:#E6B15A; --warn-soft:#3A2D14; --bad:#F08A78; --bad-soft:#3C1F1A;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0E1512; --surface:#151E1A; --surface-2:#1D2924; --ink:#E4EEE9; --ink-2:#9DB2A9; --line:#2A3833;
+  --accent:#4CC2A4; --accent-ink:#06231C; --accent-soft:#17352D;
+  --good:#5CD09A; --good-soft:#163526; --warn:#E6B15A; --warn-soft:#3A2D14; --bad:#F08A78; --bad-soft:#3C1F1A;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font:400 14px/1.45 var(--f-body)}
+.app{padding-inline:16px;padding-block:20px 48px;max-width:1500px;margin-inline:auto}
+h1,h2,h3{font-family:var(--f-display);margin:0;text-wrap:balance}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px;margin-bottom:16px}
+.top h1{font-size:28px;line-height:1.1;letter-spacing:-.01em}
+.top p{margin:4px 0 0;color:var(--ink-2)}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+.tab{background:none;border:0;border-bottom:3px solid transparent;padding:9px 14px;cursor:pointer;color:var(--ink-2);font-weight:600;white-space:nowrap}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.panel[hidden]{display:none}
+
+/* seletor de empresa */
+.cobar{display:flex;align-items:center;gap:8px;margin:0 0 12px;overflow-x:auto;padding-bottom:2px}
+.cobar .lbl-co{font-weight:600;color:var(--ink-2);white-space:nowrap}
+.co-tabs{display:flex;gap:8px}
+.cobar .spacer{flex:1}
+.cobar a.btn{text-decoration:none;color:var(--ink);white-space:nowrap}
+.co-tab{display:inline-flex;align-items:center;gap:7px;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:6px 13px;cursor:pointer;font-weight:600;white-space:nowrap;color:var(--ink)}
+.co-tab:hover{border-color:var(--accent)}
+.co-tab[aria-selected="true"]{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.co-tab .n{font:600 12px var(--f-mono);background:var(--surface-2);color:var(--ink-2);border-radius:999px;padding:1px 7px}
+.co-tab[aria-selected="true"] .n{background:color-mix(in srgb,var(--accent-ink) 20%,transparent);color:inherit}
+
+/* notices */
+.notice{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border-radius:8px;background:var(--warn-soft);color:var(--ink);border:1px solid var(--line);margin-bottom:12px}
+.notice b{color:var(--warn)}
+.notice.info{background:var(--accent-soft)}
+.notice button{margin-left:auto}
+
+/* buttons */
+.btn{display:inline-flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:7px 12px;cursor:pointer;font-weight:600}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.small{padding:4px 9px;font-size:13px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.ico{background:none;border:0;cursor:pointer;width:28px;height:28px;border-radius:6px;color:var(--ink-2);font-size:16px;line-height:1}
+.ico:hover{background:var(--surface-2);color:var(--ink)}
+.ico.del:hover{color:var(--bad)}
+
+/* toolbar */
+.toolbar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-bottom:12px}
+.toolbar .sep{width:1px;height:26px;background:var(--line);margin-inline:4px}
+.field-inline{display:inline-flex;align-items:center;gap:6px;font-weight:600}
+.field-inline input[type="text"]{width:64px;text-align:right;font-family:var(--f-mono)}
+.chk{display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-weight:600}
+input[type="text"],select,textarea{background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+input[type="text"]:focus,select:focus,textarea:focus{border-color:var(--accent)}
+.paste{margin-bottom:12px;display:grid;gap:8px}
+.paste textarea{width:100%;min-height:110px;font-family:var(--f-mono);font-size:12px}
+.spacer{flex:1}
+tr.item.stale td.res,tr.item.stale + tr.detail td{opacity:.4}
+tr.item.stale .sticky-a::after{content:"";position:absolute;left:16px;bottom:7px;width:8px;height:8px;border-radius:50%;background:var(--warn)}
+#stale-msg{color:var(--warn);font-weight:600}
+.searchbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;margin-bottom:10px}
+.searchbar input[type="text"]{width:min(100%,380px);padding:7px 10px}
+
+/* table */
+.tablewrap{overflow:auto;max-height:74vh;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table.grid{border-collapse:separate;border-spacing:0;min-width:max-content;width:100%}
+.grid th,.grid td{padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;text-align:left;vertical-align:middle;background:var(--surface)}
+.grid thead th{position:sticky;z-index:3;background:var(--surface-2);font-size:12px;font-weight:600;color:var(--ink-2);letter-spacing:.03em;text-transform:uppercase}
+.grid thead tr.grp th{top:0;height:30px}
+.grid thead tr.cols th{top:30px}
+.grid thead th.grp-in{color:var(--ink)}
+.grid thead th.grp-out{color:var(--accent);background:var(--accent-soft)}
+.sticky-a{position:sticky;left:0;z-index:2;width:40px;min-width:40px;padding-inline:4px!important}
+.sticky-b{position:sticky;left:40px;z-index:2;min-width:230px;border-right:1px solid var(--line)}
+.grid thead .sticky-a,.grid thead .sticky-b{z-index:5}
+.cell-in{width:100%;border:1px solid transparent;border-radius:6px;background:transparent;padding:5px 6px}
+.cell-in:hover{border-color:var(--line)}
+.cell-in:focus{border-color:var(--accent);background:var(--surface)}
+.sticky-b{min-width:210px!important}
+.sticky-b .nm{display:flex;align-items:center;gap:4px}
+.sticky-b .cell-in.sku{display:block;width:100%;font-size:11.5px;color:var(--ink-2);padding-block:2px}
+.grid th.adj,.grid td.adj{border-left:1px solid var(--line)}
+.sticky-b .nm .cell-in{flex:1;min-width:0}
+.sticky-b .nm .tag{margin-left:0;flex:none}
+.cell-in.num{text-align:right;font-family:var(--f-mono);font-size:13px;width:78px}
+.cell-in.sku{font-family:var(--f-mono);font-size:12px;width:100px}
+select.cell-in{width:135px}
+.dims{display:flex;align-items:center;gap:2px}
+.dims .cell-in.num{width:46px;padding-inline:3px}
+.dims span{color:var(--ink-2)}
+td.res{min-width:150px;border-left:1px solid var(--line)}
+th.resh{min-width:150px;border-left:1px solid var(--line)}
+.price{font:600 15px/1.2 var(--f-mono);letter-spacing:-.01em}
+.price.na{color:var(--ink-2);font-weight:400}
+.price.neg{color:var(--bad)}
+.price .pc{font-weight:400;font-size:12px;color:var(--ink-2)}
+.price.neg .pc{color:var(--bad)}
+td.res.best{background:var(--good-soft)}
+.sub{color:var(--ink-2);font-size:12px;font-family:var(--f-mono)}
+.lbl2{font-size:10.5px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);margin-top:5px;line-height:1.2}
+.lbl2:first-child{margin-top:0}
+.sub2{font-size:13px;color:var(--ink)}
+.res.low .price{color:var(--accent)}
+.tag{display:inline-block;font:600 10px/1 var(--f-body);letter-spacing:.04em;text-transform:uppercase;padding:2px 5px;border-radius:4px;background:var(--accent-soft);color:var(--accent);margin-left:6px;vertical-align:2px}
+.hint{font-size:11px;color:var(--good);margin-top:2px;white-space:normal;max-width:170px;line-height:1.3}
+.flag{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--warn-soft);color:var(--warn);font:700 10px/1 var(--f-body);margin-left:5px;cursor:help;vertical-align:1px}
+.pill{display:inline-block;font:600 10px/1 var(--f-body);letter-spacing:.04em;text-transform:uppercase;padding:3px 6px;border-radius:999px}
+.pill.confirmado{background:var(--good-soft);color:var(--good)}
+.pill.estimado{background:var(--warn-soft);color:var(--warn)}
+.pill.confirmar{background:var(--bad-soft);color:var(--bad)}
+.chname{display:flex;flex-direction:column;gap:4px;align-items:flex-start;text-transform:none;letter-spacing:0;font-size:13px;color:var(--ink)}
+tr.detail td{background:var(--surface-2);white-space:normal;padding:12px 16px}
+.dtable{border-collapse:collapse;font-size:12.5px;min-width:640px}
+.dtable th,.dtable td{padding:4px 12px 4px 0;text-align:right;border:0;background:transparent;font-family:var(--f-mono);white-space:nowrap}
+.dtable th:first-child,.dtable td:first-child{text-align:left;font-family:var(--f-body);color:var(--ink-2)}
+.dtable thead th{font-family:var(--f-body);text-transform:none;letter-spacing:0;font-size:12px;color:var(--ink);position:static;background:transparent}
+.dtable tr.tot td{border-top:1px solid var(--line);font-weight:600;color:var(--ink)}
+.dtable tr.tot td:first-child{color:var(--ink)}
+.dtable .neg{color:var(--bad)}
+.legend{margin-top:10px;color:var(--ink-2);font-size:12.5px;display:flex;flex-wrap:wrap;gap:6px 18px}
+
+/* config */
+.cfg-grid{display:grid;gap:16px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:16px}
+.card h2{font-size:18px;margin-bottom:4px}
+.card p.lead{margin:0 0 12px;color:var(--ink-2)}
+.mini{width:100%;border-collapse:collapse}
+.mini th{font-size:12px;color:var(--ink-2);font-weight:600;text-align:left;padding:4px 8px 4px 0}
+.mini td{padding:3px 8px 3px 0}
+.mini input[type="text"]{width:100%;min-width:70px}
+.mini input.n{font-family:var(--f-mono);text-align:right}
+.scroll-x{overflow-x:auto}
+details.chcard{border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+details.chcard+details.chcard{margin-top:10px}
+details.chcard summary{cursor:pointer;list-style:none;display:flex;flex-wrap:wrap;gap:8px 12px;align-items:center;padding:12px 14px}
+details.chcard summary::-webkit-details-marker{display:none}
+details.chcard summary::before{content:"▸";color:var(--ink-2);width:12px}
+details.chcard[open] summary::before{content:"▾"}
+details.chcard summary .nm{font:600 16px var(--f-display)}
+.chbody{padding:2px 14px 14px;display:grid;gap:14px}
+.chbody .note{margin:0;color:var(--ink-2);font-size:13px;max-width:78ch}
+.two{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.lbl{display:block;font-size:12px;font-weight:600;color:var(--ink-2);margin-bottom:4px;text-transform:uppercase;letter-spacing:.03em}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.help{color:var(--ink-2);font-size:12.5px;margin:6px 0 0}
+
+/* formula */
+.prose{max-width:74ch}
+.prose h2{font-size:20px;margin:22px 0 6px}
+.prose h2:first-child{margin-top:0}
+.prose p,.prose li{margin:6px 0}
+.formula{font:500 15px/1.5 var(--f-mono);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow-x:auto;white-space:pre}
+
+/* usuário e nuvem */
+.userbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.userbar .who{color:var(--ink-2);font-size:13px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sync{font-size:12px;font-weight:600;padding:3px 8px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
+.sync[data-state="ok"]{background:var(--good-soft);color:var(--good)}
+.sync[data-state="err"]{background:var(--bad-soft);color:var(--bad)}
+.sync[data-state="pending"]{background:var(--warn-soft);color:var(--warn)}
+.boot{position:fixed;inset:0;background:var(--bg);display:grid;place-items:center;z-index:50}
+.boot[hidden]{display:none}
+.boot-card{text-align:center;color:var(--ink-2);display:grid;gap:12px;justify-items:center}
+dialog#dlg-senha{border:1px solid var(--line);border-radius:12px;background:var(--surface);color:var(--ink);padding:20px}
+dialog#dlg-senha::backdrop{background:rgba(0,0,0,.4)}
+.dlg-in{width:100%;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:8px 10px}
+/* toast */
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 18px);background:var(--ink);color:var(--bg);padding:9px 14px;border-radius:8px;z-index:20;max-width:min(92vw,520px);box-shadow:0 6px 24px rgba(0,0,0,.25)}
+@media (prefers-reduced-motion:no-preference){.toast{animation:pop .18s ease-out}}
+@keyframes pop{from{opacity:0;transform:translate(-50%,6px)}to{opacity:1;transform:translate(-50%,0)}}
+</style>
+
+
+</head>
+<body>
+<div class="app">
+  <header class="top">
+    <div>
+      <h1>Precificador Multicanal</h1>
+      <p>Informe custo, imposto e medidas. A página devolve o menor preço que mantém sua margem em cada loja.</p>
+    </div>
+    <div class="userbar">
+      <span class="sync" id="sync" data-state="load" aria-live="polite">Carregando…</span>
+      <span class="who" id="who"></span>
+      <button class="btn small" id="btn-senha" type="button">Alterar senha</button>
+      <button class="btn small" id="btn-logout" type="button">Sair</button>
+    </div>
+  </header>
+
+  <div class="cobar" id="cobar"></div>
+
+  <div class="tabs" role="tablist" aria-label="Seções">
+    <button class="tab" role="tab" id="t-itens" aria-selected="true" aria-controls="p-itens" data-tab="itens">Itens e preços</button>
+    <button class="tab" role="tab" id="t-lucro" aria-selected="false" aria-controls="p-lucro" data-tab="lucro">Preço ideal, lucro e taxas</button>
+    <button class="tab" role="tab" id="t-config" aria-selected="false" aria-controls="p-config" data-tab="config">Taxas, frete e empresas</button>
+    <button class="tab" role="tab" id="t-formula" aria-selected="false" aria-controls="p-formula" data-tab="formula">Como o preço é calculado</button>
+  </div>
+
+  <!-- ITENS -->
+  <section class="panel" id="p-itens" role="tabpanel" aria-labelledby="t-itens">
+    <div class="notice" id="notice-conf">
+      <div><b>Confira antes de usar de verdade.</b> Comissões e tarifas são valores de referência de set/2026, calibrados com relatórios reais de vendedores. O rótulo <span class="pill estimado">estimado</span> marca o que ainda precisa ser conferido com a sua conta (o frete varia por reputação, categoria e programa). Ajuste tudo na aba <a href="#" data-goto="config">Taxas, frete e empresas</a>.</div>
+    </div>
+    <div class="notice info" id="notice-ex" hidden>
+      <div>As linhas abaixo são <b>exemplos</b> inventados só para você ver o sistema funcionando. Importe a sua planilha (ou use “+ Item”) e edite os dados: eles ficam salvos na sua conta.</div>
+    </div>
+
+    <div class="toolbar">
+      <button class="btn" id="btn-import" type="button">Importar planilha</button>
+      <input type="file" id="file-in" accept=".xlsx,.xls,.csv,.txt" hidden>
+      <button class="btn" id="btn-paste" type="button">Colar do Excel</button>
+      <button class="btn" id="btn-template" type="button">Baixar modelo</button>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="btn-add" type="button">+ Item</button>
+      <span class="sep" aria-hidden="true"></span>
+      <label class="field-inline" for="in-margin"><span title="Vale para empresas sem margem própria e sem margem no item">Margem padrão</span> <input type="text" id="in-margin" inputmode="decimal" autocomplete="off"> %</label>
+      <label class="chk" for="in-charm"><input type="checkbox" id="in-charm"> Terminar em ,90</label>
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="btn-recalc" type="button">Atualizar cálculo</button>
+      <label class="chk" for="in-auto" title="Ligado: recalcula a cada digitação. Desligado: só ao clicar em Atualizar cálculo"><input type="checkbox" id="in-auto"> Automático</label>
+      <span class="spacer"></span>
+      <button class="btn" id="btn-copy" type="button">Copiar tabela</button>
+      <button class="btn" id="btn-export" type="button">Exportar Excel</button>
+      <button class="btn" id="btn-clear" type="button">Limpar itens</button>
+    </div>
+
+    <p class="help" id="stale-msg" style="margin:-4px 0 10px" aria-live="polite"></p>
+
+    <div class="paste" id="paste-box" hidden>
+      <label class="lbl" for="paste-area">Cole aqui as linhas copiadas do Excel (com a linha de cabeçalho)</label>
+      <textarea id="paste-area" placeholder="Produto&#9;Custo&#9;Peso&#9;Comprimento&#9;Largura&#9;Altura&#10;Ração 10 kg&#9;98,50&#9;10,2&#9;50&#9;35&#9;12"></textarea>
+      <div class="row-actions"><button class="btn primary small" id="btn-paste-go" type="button">Importar linhas coladas</button><button class="btn small" id="btn-paste-cancel" type="button">Cancelar</button></div>
+    </div>
+
+    <div class="searchbar">
+      <label class="lbl" for="in-search" style="margin:0">Buscar</label>
+      <input type="text" id="in-search" autocomplete="off" placeholder="SKU (vários: separe por vírgula ou espaço)" aria-describedby="search-count">
+      <button class="btn small" id="btn-search-clear" type="button" hidden>Limpar busca</button>
+      <span class="help" id="search-count" style="margin:0" aria-live="polite"></span>
+    </div>
+    <p class="help" id="no-match" hidden style="margin:0 0 10px">Nenhum item com esse SKU ou nome. Confira a grafia ou limpe a busca.</p>
+    <p class="help" id="no-co" hidden style="margin:0 0 10px">Nenhum item nesta empresa ainda. Use “+ Item” ou importe uma planilha: os itens novos entram na empresa selecionada.</p>
+    <div class="tablewrap" id="tablewrap">
+      <table class="grid" id="grid" aria-label="Itens e preço final por loja"></table>
+    </div>
+    <div class="legend">
+      <span><span class="tag">menor</span> menor preço entre as lojas para o item</span>
+      <span><span class="flag">!</span> aviso sobre peso ou frete (passe o mouse)</span>
+      <span>Margem = lucro líquido ÷ preço de venda. Clique na seta ▸ da linha para ver a conta completa.</span>
+      <span>Os preços se recalculam ao digitar. Se desligar “Automático”, eles só mudam ao clicar em Atualizar cálculo (ou apertar Enter num campo), e as linhas alteradas ficam com ponto laranja e preços esmaecidos.</span>
+    </div>
+  </section>
+
+  <!-- LUCRO NO PREÇO DE VENDA -->
+  <section class="panel" id="p-lucro" role="tabpanel" aria-labelledby="t-lucro" hidden>
+    <div class="notice info">
+      <div>Veja o <b>preço de venda ideal</b> de cada item em cada loja, o menor preço que não dá prejuízo e cumpre a margem alvo (do item, da empresa ou a padrão), com o <b>lucro</b> e as <b>taxas e comissões</b> (comissão + taxa fixa + frete) em R$ e em %. Os itens são os mesmos da aba Itens e preços; extras, imposto e ajustes do item ficam lá. Custo e margem que você alterar aqui valem nas duas abas.</div>
+    </div>
+    <div class="toolbar">
+      <span class="spacer"></span>
+      <button class="btn" id="btn-l-copy" type="button">Copiar tabela</button>
+      <button class="btn" id="btn-l-export" type="button">Exportar Excel</button>
+    </div>
+    <div class="searchbar">
+      <label class="lbl" for="in-search2" style="margin:0">Buscar</label>
+      <input type="text" id="in-search2" autocomplete="off" placeholder="SKU (vários: separe por vírgula ou espaço)">
+      <button class="btn small" id="btn-search2-clear" type="button" hidden>Limpar busca</button>
+      <span class="help" id="search2-count" style="margin:0" aria-live="polite"></span>
+    </div>
+    <p class="help" id="no-co2" hidden style="margin:0 0 10px">Nenhum item nesta empresa ainda. Adicione itens na aba Itens e preços.</p>
+    <div class="tablewrap">
+      <table class="grid" id="grid2"aria-label="Lucro por loja no preço de venda informado"></table>
+    </div>
+    <div class="legend">
+      <span><span class="tag">menor</span> loja com o menor preço de venda para o item (o TikTok fica de fora enquanto não tiver frete)</span>
+      <span><span class="flag">!</span> aviso sobre peso ou frete (passe o mouse)</span>
+      <span>Lucro = preço − taxas e comissões − imposto − custo − extras. Os percentuais são sobre o preço de venda. Clique na seta ▸ para ver a conta completa.</span>
+    </div>
+  </section>
+
+  <!-- CONFIG -->
+  <section class="panel" id="p-config" role="tabpanel" aria-labelledby="t-config" hidden>
+    <div class="cfg-grid" id="cfg"></div>
+  </section>
+
+  <!-- FORMULA -->
+  <section class="panel" id="p-formula" role="tabpanel" aria-labelledby="t-formula" hidden>
+    <div class="prose card">
+      <h2>A conta</h2>
+      <div class="formula">Preço = (Custo + Extras + Taxa fixa + Frete)
+        ÷ (1 − Imposto − Comissão − Extra do canal − Margem)</div>
+      <p>Imposto, comissão, extra do canal e margem são percentuais do <b>preço de venda</b>. Custo, extras (embalagem, por exemplo), taxa fixa e frete são valores em reais.</p>
+
+      <h2>Por que testar faixa por faixa</h2>
+      <p>Comissão e taxa fixa mudam conforme o preço (Shopee cobra R$ 4 até R$ 79,99 e R$ 16 a partir de R$ 80; o Mercado Livre não cobra tarifa a partir de R$ 79). Por isso a página resolve a conta em cada faixa, do menor preço para o maior, e fica com o primeiro preço que cai dentro da própria faixa e entrega a margem pedida.</p>
+      <p>Quando subir um pouco o preço rende mais lucro em reais do que ficar na faixa atual (o degrau de R$ 79 do Mercado Livre é o caso clássico), a célula mostra essa dica em verde.</p>
+
+      <h2>Peso cobrado</h2>
+      <p>O frete usa o maior valor entre o peso real e o peso cubado: comprimento × largura × altura (cm) ÷ divisor do canal (6.000 por padrão), mais a tara da embalagem quando o canal tem (20 g na Amazon DBA). Sem peso e sem medidas, a página usa a primeira faixa do frete e avisa.</p>
+
+      <h2>Quando os preços mudam</h2>
+      <p>Por padrão, os preços se recalculam a cada digitação (“Automático” ligado). Se preferir editar vários itens antes de ver o resultado, desligue “Automático”: as linhas alteradas ficam esmaecidas e marcadas até você clicar em Atualizar cálculo ou apertar Enter num campo. Exportar e copiar sempre usam os números atualizados.</p>
+
+      <h2>Qual margem vale</h2>
+      <p>Para cada item a página usa, nesta ordem: a margem preenchida na linha do item, a margem alvo da empresa (aba Taxas, frete e empresas) e, se a empresa não tiver, a margem padrão da tela de itens. Na linha, o campo Margem mostra em cinza qual valor está valendo.</p>
+
+      <h2>Arredondamento</h2>
+      <p>Com “Terminar em ,90” ligado, o preço sobe até o próximo final ,90 e a conta é refeita nesse preço. A margem real nunca fica abaixo da margem que vale para o item.</p>
+
+      <h2>O que a conta ainda não inclui</h2>
+      <ul>
+        <li>Mensalidade do plano Profissional da Amazon, armazenagem (Full e FBA), anúncios pagos, cupons e devoluções.</li>
+        <li>Substituição tributária e DIFAL: se valem para o item, informe o percentual efetivo na coluna Imposto.</li>
+        <li>No Mercado Livre o frete depende do peso, da faixa de preço e da reputação. A tabela aceita faixas de preço, mas só uma linha foi calibrada com um anúncio real; o resto é referência até você completar.</li>
+      </ul>
+    </div>
+  </section>
+</div>
+
+<div class="toast" id="toast" role="status" hidden></div>
+<div class="boot" id="boot"><div class="boot-card"><p>Carregando…</p><button class="btn small" type="button" hidden onclick="location.reload()">Tentar de novo</button></div></div>
+<dialog id="dlg-senha">
+  <form id="form-senha" method="dialog" style="display:grid;gap:10px;min-width:min(86vw,340px)">
+    <h2 style="margin:0;font:600 18px var(--f-display)">Alterar senha</h2>
+    <label class="lbl" for="senha-atual">Senha atual</label><input type="password" id="senha-atual" autocomplete="current-password" required class="dlg-in">
+    <label class="lbl" for="senha-nova">Nova senha (mínimo 8 caracteres)</label><input type="password" id="senha-nova" autocomplete="new-password" required minlength="8" class="dlg-in">
+    <label class="lbl" for="senha-nova2">Repita a nova senha</label><input type="password" id="senha-nova2" autocomplete="new-password" required minlength="8" class="dlg-in">
+    <p id="senha-msg" class="help" role="alert" style="margin:0;color:var(--bad)"></p>
+    <div class="row-actions"><button class="btn primary" type="submit">Salvar</button><button class="btn" type="button" id="senha-cancel">Cancelar</button></div>
+  </form>
+</dialog>
+
+<script src="../assets/xlsx.full.min.js"></script>
+<script src="../config.js"></script>
+<script>
+(function(){
+'use strict';
+
+/* ====================== MOTOR DE CÁLCULO ====================== */
+// ENGINE-START
+function num(v){
+  if(typeof v==='number') return isFinite(v)?v:NaN;
+  if(v==null) return NaN;
+  let s=String(v).trim(); if(!s) return NaN;
+  s=s.replace(/R\$|\s|%/g,'');
+  if(s.indexOf(',')>=0) s=s.replace(/\./g,'').replace(',','.');
+  const n=parseFloat(s); return isFinite(n)?n:NaN;
+}
+function r2(v){ return Math.round(v*100)/100; }
+function charmUp(p){ const k=Math.ceil(p-0.90-1e-9); return r2(Math.max(k,0)+0.90); }
+
+function resolveChannel(S, ch){
+  const byId=id=>S.channels.find(c=>c.id===id);
+  const bRef=ch.bandsRef?byId(ch.bandsRef):ch;
+  const sRef=ch.shipRef?byId(ch.shipRef):ch;
+  const add=ch.pctAdd||0;
+  const bands=(bRef.bands||[]).map(b=>({from:b.from,pct:b.pct+add,fixed:b.fixed})).sort((a,b)=>a.from-b.from);
+  if(!bands.length||bands[0].from>0) bands.unshift({from:0,pct:add,fixed:0});
+  const ship=(sRef.ship||[]).map(r=>({from:r.from||0,upTo:r.upTo,cost:r.cost})).sort((a,b)=>a.from-b.from||a.upTo-b.upTo);
+  const dP=+sRef.shipDiscPct||0, dF=+sRef.shipDiscFrom||0;
+  const shipD=ship.map(r=>(dP>0&&r.from>=dF)?{from:r.from,upTo:r.upTo,cost:r2(r.cost*(1-dP/100))}:r);
+  return {bands:bands, ship:shipD, divisor:(sRef.divisor>0?sRef.divisor:6000), tare:(+sRef.tare>0?+sRef.tare:0), extraPct:ch.extraPct||0};
+}
+function billedWeight(it, divisor, tare){
+  const a=num(it.weight), l=num(it.l), w=num(it.w), h=num(it.h);
+  const actual=isNaN(a)?0:a;
+  const cubic=(l>0&&w>0&&h>0)?(l*w*h)/divisor:0;
+  const base=Math.max(actual,cubic);
+  return {kg:base+((tare>0&&base>0)?tare:0), actual:actual, cubic:cubic};
+}
+function shipCost(ship, kg){
+  if(!ship.length) return {cost:0, over:false, noWeight:false, none:true};
+  if(!(kg>0)) return {cost:ship[0].cost, over:false, noWeight:true, none:false};
+  for(let i=0;i<ship.length;i++){ if(kg<=ship[i].upTo+1e-9) return {cost:ship[i].cost, over:false, noWeight:false, none:false}; }
+  return {cost:ship[ship.length-1].cost, over:true, noWeight:false, none:false};
+}
+function bandFor(bands, p){ let b=bands[0]; for(let i=0;i<bands.length;i++){ if(bands[i].from<=p+1e-9) b=bands[i]; } return b; }
+// Junta as faixas de comissão com as faixas de preço do frete: o frete pode mudar de tabela em qualquer preço (ex.: R$ 79 no Mercado Livre)
+function withShip(bands, ship, kg){
+  if(!ship.length) return bands.map(b=>({from:b.from,pct:b.pct,fixed:b.fixed,ship:0,over:false,noWeight:false}));
+  const groups=Array.from(new Set(ship.map(r=>r.from))).sort((a,b)=>a-b);
+  const pts=Array.from(new Set(bands.map(b=>b.from).concat(groups.filter(g=>g>0)))).sort((a,b)=>a-b);
+  return pts.map(function(x){
+    const cb=bandFor(bands,x); let g=null;
+    for(let i=0;i<groups.length;i++){ if(groups[i]<=x+1e-9) g=groups[i]; }
+    const sc=(g===null)?{cost:0,over:false,noWeight:false}:shipCost(ship.filter(r=>r.from===g),kg);
+    return {from:x,pct:cb.pct,fixed:cb.fixed,ship:sc.cost,over:sc.over,noWeight:sc.noWeight};
+  });
+}
+function evaluate(p, ctx){
+  const b=bandFor(ctx.bands,p);
+  const tax=p*ctx.tax, commission=p*b.pct/100, fixed=b.fixed, extraFee=p*ctx.extraPct/100;
+  const ship=b.ship||0;
+  const shipIn=ctx.shipIn||0;
+  const receive=p-commission-fixed-extraFee-ship+shipIn;
+  const net=receive-tax-ctx.cost-ctx.extra;
+  return {price:p, tax:tax, commission:commission, commissionPct:b.pct, fixed:fixed, extraFee:extraFee, ship:ship, shipIn:shipIn, cost:ctx.cost, extra:ctx.extra, receive:receive, over:!!b.over, noWeight:!!b.noWeight, net:net, margin:p>0?net/p:0};
+}
+function solve(ctx, margin, charm){
+  const bands=ctx.bands; let found=null;
+  for(let i=0;i<bands.length;i++){
+    const b=bands[i];
+    const d=1-ctx.tax-b.pct/100-ctx.extraPct/100-margin;
+    if(d<=0.001) continue;
+    const hi=(i+1<bands.length)?bands[i+1].from:Infinity;
+    const p=(ctx.cost+ctx.extra+b.fixed+(b.ship||0)-(ctx.shipIn||0))/d;
+    const cand=Math.max(p,b.from);
+    if(cand<hi-1e-9){ found=cand; break; }
+  }
+  if(found===null) return null;
+  let price=Math.ceil(found*100-1e-9)/100;
+  if(charm) price=charmUp(price);
+  const step=charm?1:0.01;
+  let ev=evaluate(price,ctx), guard=0;
+  while(ev.margin<margin-1e-9 && guard<4000){ price=r2(price+step); ev=evaluate(price,ctx); guard++; }
+  let hint=null;
+  const next=bands.find(b=>b.from>price+1e-9);
+  if(next){
+    const np=charm?charmUp(next.from):Math.ceil(next.from*100)/100;
+    const evN=evaluate(np,ctx);
+    const evJ=evaluate(r2(next.from-0.01),ctx); // último centavo da faixa atual
+    // degrau: entrar na próxima faixa rende mais do que o topo da faixa atual (as taxas caem)
+    if(evN.net-evJ.net>0.5 && (np-price)/price<=0.25) hint={price:np, net:evN.net, margin:evN.margin};
+  }
+  return {ev:ev, hint:hint, belowTarget:ev.margin<margin-1e-9};
+}
+// ENGINE-END
+
+/* ====================== PADRÕES ====================== */
+const dbaShip=()=>{
+  const rows=[{from:0,upTo:22,cost:4.5},{from:30,upTo:22,cost:6.5},{from:50,upTo:22,cost:6.75}];
+  const W=[0.25,0.5,1,2,3,4,5,6];
+  const T={79:[11.95,12.85,13.45,14.00,14.95,16.15,17.00,25.00],100:[13.95,15.00,15.70,16.35,17.45,18.85,19.90,30.00],120:[15.95,17.15,17.95,18.75,19.95,21.55,22.75,34.00],150:[17.95,19.30,20.20,21.10,22.40,24.20,25.60,38.00]};
+  const A={79:3.05,100:3.05,120:3.05,150:3.5};
+  Object.keys(T).forEach(function(k){
+    const f=+k; W.forEach((u,i)=>rows.push({from:f,upTo:u,cost:T[k][i]}));
+    for(let kg=7;kg<=22;kg++) rows.push({from:f,upTo:kg,cost:Math.round((T[k][7]+(kg-6)*A[k])*100)/100});
+  });
+  W.forEach((u,i)=>rows.push({from:200,upTo:u,cost:T[150][i]}));
+  rows.push({from:200,upTo:8,cost:40.45},{from:200,upTo:11,cost:69.95});
+  for(let kg=12;kg<=22;kg++) rows.push({from:200,upTo:kg,cost:Math.round((69.95+(kg-11)*3.5)*100)/100});
+  return rows;
+};
+const DEFAULT_CHANNELS=()=>[
+  {id:'ml_classico',label:'ML Clássico',status:'estimado',adj:true,extraPct:0,divisor:6000,
+   bands:[{from:0,pct:14,fixed:0}],
+   ship:[{from:0,upTo:0.1,cost:6.85},{from:0,upTo:0.2,cost:8.15},{from:0,upTo:1,cost:8.25},{from:0,upTo:3,cost:9.15},{from:0,upTo:5,cost:10.25},{from:0,upTo:9,cost:10.55},
+         {from:79,upTo:0.9,cost:12.23},{from:79,upTo:1.6,cost:12.78},{from:79,upTo:3.1,cost:13.53},{from:79,upTo:5,cost:19.75},{from:79,upTo:7.6,cost:24.68},{from:79,upTo:10.2,cost:34.68},{from:79,upTo:15.1,cost:39.68},{from:79,upTo:23,cost:49.35},{from:79,upTo:40,cost:65.85}],
+   note:'Valores de referência calibrados em relatórios reais do Mercado Livre (mais de 800 anúncios). Comissão: 14% (Clássico) na maioria das categorias; algumas (por exemplo, areia higiênica, tapete higiênico e alguns medicamentos) pagam 12,5%: nesses itens coloque −1,5 na coluna “Ajuste ML (p.p.)”. Não há tarifa fixa por venda. Frete: depende do peso e da faixa de preço (abaixo e a partir de R$ 79). A tabela usa, para cada peso, o valor mais frequente nos relatórios; ela bate exatamente em cerca de 70% dos anúncios fora do Full, e o resto varia por reputação, categoria e peso cadastrado no anúncio. Compare com o “Preço ideal” do seu relatório e ajuste as faixas. Itens no Full têm outro frete, que não é modelado. Faixas sem dado (5 a 9 kg abaixo de R$ 79 e acima de 15 kg) são estimativas.'},
+  {id:'ml_premium',label:'ML Premium',status:'estimado',adj:true,bandsRef:'ml_classico',shipRef:'ml_classico',pctAdd:5,extraPct:0,
+   note:'Comissão do Clássico + 5 pontos percentuais (14% → 19%; 12,5% → 17,5%), confirmado no relatório do Mercado Livre. Usa o mesmo frete do Clássico e o mesmo “Ajuste ML” do item.'},
+  {id:'amz_dba',label:'Amazon DBA',status:'estimado',extraPct:0,divisor:6000,tare:0.02,shipDiscPct:50,shipDiscFrom:79,
+   bands:[{from:0,pct:0,fixed:1},{from:8.34,pct:12,fixed:0}],
+   ship:dbaShip(),
+   note:'Tabela oficial da Amazon (Animais de Estimação): comissão de 12% só sobre o preço do produto, mínimo de R$ 1,00 por item. Frete DBA: até R$ 29,99 = R$ 4,50; R$ 30 a 49,99 = R$ 6,50; R$ 50 a 78,99 = R$ 6,75 (tarifa fixa por preço); de R$ 79 a 199,99 a tarifa varia por peso (faixas de R$ 79, 100, 120 e 150) e cada kg acima de 6 kg soma R$ 3,05 (R$ 3,50 na faixa de R$ 150). Peso cobrado = maior entre o real e o cubado (C × L × A ÷ 6.000), mais 20 g de embalagem, arredondado para cima; limite de 22 kg. Conferida com centenas de pedidos reais. Em pedidos reais de set/2026, os fretes de R$ 79 ou mais apareceram com 50% de desconto sobre a tabela; por isso o campo “Desconto no frete” está em 50% a partir de R$ 79. Se a Amazon encerrar a redução, coloque 0. Acima de R$ 200 as tarifas são regionais (planilha da Amazon): usei a faixa de R$ 150 até 6 kg e valores observados de 6 a 11 kg, então essa parte é estimada.'},
+  {id:'amz_fba',label:'Amazon FBA',status:'estimado',bandsRef:'amz_dba',extraPct:0,divisor:10000,
+   ship:[{upTo:0.1,cost:4.5},{upTo:0.5,cost:6.5},{upTo:1,cost:8.98},{upTo:1.5,cost:10.55},{upTo:2.5,cost:9.98},{upTo:4.5,cost:6.05},{upTo:7.5,cost:20.23},{upTo:10.5,cost:34.98},{upTo:15.5,cost:42.98},{upTo:30,cost:65}],
+   note:'Mesma comissão do DBA (12%, mínimo de R$ 1,00). Frete Full: só a faixa de 2,5 a 4,5 kg (R$ 6,05 por unidade) foi confirmada em pedidos reais; as demais faixas usam os valores do DBA como estimativa. Confira com a calculadora de receita da Amazon. Armazenagem não entra.'},
+  {id:'shopee',label:'Shopee',status:'estimado',optShip:true,extraPct:0,divisor:6000,
+   bands:[{from:0,pct:20,fixed:4},{from:80,pct:14,fixed:16},{from:100,pct:14,fixed:20},{from:200,pct:14,fixed:26}],
+   ship:[{from:100,upTo:1.5,cost:21.96},{from:100,upTo:2.5,cost:25.83},{from:100,upTo:7.5,cost:33.77},{from:100,upTo:10.1,cost:39.5},{from:100,upTo:12.5,cost:47.78},{from:100,upTo:15,cost:60.2}],
+   note:'Tarifas conferidas em relatório real “Preço Ideal” da Shopee (vendedor CNPJ, mais de 180 anúncios): até R$ 79,99, 20% + R$ 4; de R$ 80 a 99,99, 14% + R$ 16; de R$ 100 a 199,99, 14% + R$ 20; a partir de R$ 200, 14% + R$ 26. Frete grátis: o vendedor paga um valor por peso quando o anúncio participa do programa, e só apareceu em anúncios de R$ 100 ou mais: 0,8 e 1,5 kg = R$ 21,96; 2 e 2,5 kg = 25,83; 7 e 7,5 kg = 33,77; 10 e 10,1 kg = 39,50; 10,2 kg = 47,78; 15 kg = 60,20. Para anúncios que não participam, marque “Não participa” na coluna “Frete grátis Shopee” do item. Faixas de 3 a 7 kg, de 10,2 a 15 kg e acima de 15 kg são estimativas. Campanhas em destaque somam 2,5% de comissão (use “Extra do canal”). Vendedor CPF com mais de 450 pedidos em 90 dias paga R$ 3 a mais por item.'},
+  {id:'tiktok',label:'TikTok Shop',status:'estimado',noBest:true,extraPct:4,divisor:6000,
+   bands:[{from:0,pct:6,fixed:0}],
+   ship:[],
+   note:'Resumo das tarifas do TikTok Shop Brasil (set/2026): comissão da plataforma de 6% sobre pedidos entregues, sem taxa de transação e sem taxa fixa; pedidos cancelados ou totalmente reembolsados não pagam comissão. Os primeiros R$ 10.000 em vendas são isentos de comissão, e isso não entra no cálculo (o preço é calculado como se a comissão de 6% valesse sempre). “Extra do canal” está em 4%, valor de referência para a comissão de afiliados; se a venda não vier de afiliado, coloque 0. Se participa do SFP (Programa de Taxas de Envio), some mais 6% (ficaria 10%). O frete não é modelado no TikTok (o SFP cobra esse percentual em vez do frete por peso), por isso o TikTok não é escolhido como loja “menor” na aba de preços.'}
+];
+const DEFAULT_S=()=>({
+  v:8, margin:20, charm:true, auto:true, coSel:'all',
+  companies:[{id:'c1',name:'Minha empresa',tax:6,margin:''}],
+  channels:DEFAULT_CHANNELS()
+});
+const EXAMPLES=()=>[
+  {name:'Ração Premium Cães Adultos 10 kg',sku:'EX-001',price:'',company:'c1',cost:'98,50',extra:'',tax:'',margin:'',weight:'10,2',l:'50',w:'35',h:'12'},
+  {name:'Petisco Natural para Cães 300 g',sku:'EX-002',price:'',company:'c1',cost:'12,40',extra:'',tax:'',margin:'',weight:'0,3',l:'15',w:'10',h:'8'},
+  {name:'Areia Higiênica para Gatos 4 kg',sku:'EX-003',price:'',company:'c1',cost:'22,00',extra:'',tax:'',margin:'',weight:'4',l:'30',w:'20',h:'12'}
+].map(e=>Object.assign({id:uid(),example:true},e));
+
+let uidn=0; function uid(){ return 'i'+Date.now().toString(36)+(uidn++).toString(36); }
+
+/* ====================== ESTADO ====================== */
+const KEY='precificador-multicanal:v1';
+let S=DEFAULT_S(), items=EXAMPLES();
+const ui={tab:'itens', open:new Set(), open2:new Set(), q2:'', dirty:false, q:'', stale:new Set()};
+
+const CFG=window.PREC_CONFIG||{};
+let TOKEN=''; try{ TOKEN=localStorage.getItem('prec_token')||''; }catch(e){}
+let ready=false, saveT=null, dirtyCloud=false, saving=false;
+async function api(path, body){
+  const r=await fetch(String(CFG.API_BASE||'').replace(/\/$/,'')+'/'+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) throw new Error('http '+r.status);
+  return r.json();
+}
+function goLogin(q){ try{ localStorage.removeItem('prec_token'); }catch(e){} location.replace('../entrar.html'+(q||'')); }
+function hydrate(o){
+  if(!(o&&o.S&&Array.isArray(o.items)&&o.S.channels&&o.S.companies)) return false;
+  S=o.S; items=o.items;
+  if((S.v||1)<5){ ['ml_classico','ml_premium','shopee','amz_dba','amz_fba'].forEach(function(id){ const i=S.channels.findIndex(c=>c.id===id); const d=DEFAULT_CHANNELS().find(c=>c.id===id); if(i>=0) S.channels[i]=d; }); S.v=5; }
+  if((S.v||1)<7){ const d=DEFAULT_CHANNELS().find(c=>c.id==='amz_dba'); const i=S.channels.findIndex(c=>c.id==='amz_dba'); if(i>=0) S.channels[i]=d; S.v=7; }
+  if((S.v||1)<8){ const d=DEFAULT_CHANNELS().find(c=>c.id==='tiktok'); const i=S.channels.findIndex(c=>c.id==='tiktok'); if(i>=0) S.channels[i]=d; S.v=8; }
+  return true;
+}
+function setSync(state){
+  const el=document.getElementById('sync'); if(!el) return;
+  const t={pending:'Salvando…',ok:'Salvo na nuvem',err:'Sem conexão: tentando salvar de novo',load:'Carregando…'}[state]||'';
+  el.textContent=t; el.dataset.state=state;
+}
+function save(){
+  if(!ready) return;
+  dirtyCloud=true; setSync('pending');
+  clearTimeout(saveT); saveT=setTimeout(flush,1200);
+}
+async function flush(){
+  if(!ready||!dirtyCloud) return;
+  if(saving){ clearTimeout(saveT); saveT=setTimeout(flush,800); return; }
+  saving=true; dirtyCloud=false;
+  try{
+    const r=await api('save',{token:TOKEN,data:{S:S,items:items}});
+    if(r&&r.ok){ if(!dirtyCloud) setSync('ok'); }
+    else if(r&&r.error==='sessao'){ goLogin('?expirou=1'); return; }
+    else if(r&&r.error==='tamanho'){ setSync('err'); toast('Seus dados ficaram grandes demais para salvar. Remova itens que não usa mais.'); }
+    else { throw new Error('save'); }
+  }catch(e){ dirtyCloud=true; setSync('err'); clearTimeout(saveT); saveT=setTimeout(flush,8000); }
+  finally{ saving=false; }
+}
+window.addEventListener('pagehide',function(){ if(ready&&dirtyCloud){ try{ const body=JSON.stringify({token:TOKEN,data:{S:S,items:items}}); fetch(String(CFG.API_BASE||'').replace(/\/$/,'')+'/save',{method:'POST',headers:{'Content-Type':'application/json'},body:body,keepalive:body.length<60000}); }catch(e){} } });
+document.addEventListener('visibilitychange',function(){ if(document.visibilityState==='hidden') flush(); });
+
+/* ====================== UTILIDADES ====================== */
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+const brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const pct1=v=>(v*100).toFixed(1).replace('.',',')+'%';
+const dec=(v,n)=>Number(v).toFixed(n==null?2:n).replace('.',',');
+const showIn=v=>(v===''||v==null)?'':String(v).replace('.',',');
+let toastT=null;
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.hidden=false; clearTimeout(toastT); toastT=setTimeout(function(){ t.hidden=true; },3800); }
+
+/* ====================== CÁLCULO POR ITEM ====================== */
+function companyOf(it){ return S.companies.find(c=>c.id===it.company)||S.companies[0]||{id:'',name:'',tax:0}; }
+/* ---- empresa selecionada (filtro das abas Itens e Lucro) ---- */
+function coSel(){ const id=S.coSel; return (id&&id!=='all'&&S.companies.some(c=>c.id===id))?id:'all'; }
+function inScope(it){ const s=coSel(); return s==='all'||companyOf(it).id===s; }
+function scoped(){ return items.filter(inScope); }
+function defaultCoId(){ const s=coSel(); return s!=='all'?s:((S.companies[0]||{}).id||''); }
+function coFileSuffix(){
+  const s=coSel(); if(s==='all') return '';
+  const n=normH((S.companies.find(c=>c.id===s)||{}).name||''); return n?('-'+n):'';
+}
+function renderCoBar(){
+  const bar=$('#cobar'); if(!bar) return;
+  const sel=coSel(), counts={};
+  items.forEach(function(it){ const id=companyOf(it).id; counts[id]=(counts[id]||0)+1; });
+  const tab=function(id,label,n,title){
+    return '<button class="co-tab" type="button" role="tab" data-co="'+esc(id)+'" aria-selected="'+(sel===id)+'" tabindex="'+(sel===id?0:-1)+'"'+(title?' title="'+esc(title)+'"':'')+'>'+esc(label)+'<span class="n">'+n+'</span></button>';
+  };
+  bar.innerHTML='<span class="lbl-co" id="lbl-co">Empresa</span><div class="co-tabs" role="tablist" aria-labelledby="lbl-co">'+
+    tab('all','Todas',items.length,'Mostrar os itens de todas as empresas')+
+    S.companies.map(function(c){ return tab(c.id,c.name||'(sem nome)',counts[c.id]||0,'Imposto '+showIn(c.tax)+'%'+(companyMargin(c)!==null?' · Margem alvo '+showIn(c.margin)+'%':'')); }).join('')+
+    '</div><span class="spacer"></span><a href="#" class="btn small" data-goto="config">Gerenciar empresas</a>';
+  bar.hidden=(ui.tab==='config'||ui.tab==='formula');
+  updateClearLabel();
+}
+function companyMoved(it){
+  renderCoBar();
+  if(!inScope(it)){ applyFilter(); applyFilter2(); toast('Item movido para '+(companyOf(it).name||'outra empresa')+'.'); }
+}
+function companyMargin(co){ const c=num(co.margin); return (co.margin!==''&&co.margin!=null&&!isNaN(c))?c:null; }
+function effMargin(it){ const m=num(it.margin); if(it.margin!==''&&!isNaN(m)) return m; const cm=companyMargin(companyOf(it)); return cm===null?S.margin:cm; }
+function noShip(it){ const v=String(it.shopeeFrete||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); return v==='nao'||v==='n'||v==='0'||v==='nao participa'; }
+function shipInOf(it, ch){ if(!(ch.buyerShip||ch.id==='amz_dba')) return 0; const v=num(it.shipIn); return (v>0)?v:0; }
+function calcChannel(it, ch){
+  const cost=num(it.cost);
+  if(!(cost>=0)) return {ok:false, reason:'informe o custo'};
+  const co=companyOf(it);
+  const t=num(it.tax), x=num(it.extra);
+  const taxPct=(it.tax!==''&&!isNaN(t))?t:(co.tax||0);
+  const mPct=effMargin(it);
+  const r=resolveChannel(S,ch);
+  if(ch.optShip && noShip(it)) r.ship=[];
+  if(ch.adj){ const a=num(it.mlAdj); if(!isNaN(a)&&a!==0) r.bands=r.bands.map(b=>({from:b.from,pct:Math.max(0,b.pct+a),fixed:b.fixed})); }
+  const bw=billedWeight(it,r.divisor,r.tare);
+  const ctx={cost:cost, extra:isNaN(x)?0:x, tax:taxPct/100, bands:withShip(r.bands,r.ship,bw.kg), extraPct:r.extraPct, shipIn:shipInOf(it,ch)};
+  const out=solve(ctx,mPct/100,S.charm);
+  if(!out) return {ok:false, reason:'margem inviável'};
+  const flags=[];
+  if(out.ev.over) flags.push('Peso cobrado ('+dec(bw.kg,2)+' kg) acima da maior faixa do frete: usei o valor da última faixa.');
+  if(out.ev.noWeight) flags.push('Sem peso nem medidas: usei o frete da primeira faixa.');
+  if(out.belowTarget) flags.push('Não foi possível atingir a margem alvo.');
+  return {ok:true, ev:out.ev, hint:out.hint, flags:flags, bw:bw, taxPct:taxPct, mPct:mPct, shipNone:!r.ship.length};
+}
+function calcAll(it){
+  const res={}; let low=null;
+  S.channels.forEach(function(ch){
+    const r=calcChannel(it,ch); res[ch.id]=r;
+    if(r.ok && (low===null || r.ev.price<res[low].ev.price-1e-9)) low=ch.id;
+  });
+  return {res:res, low:low};
+}
+
+/* ====================== TABELA DE ITENS ====================== */
+function companyOptions(sel){
+  return S.companies.map(c=>'<option value="'+esc(c.id)+'"'+(c.id===sel?' selected':'')+'>'+esc(c.name||'(sem nome)')+'</option>').join('');
+}
+function theadHTML(){
+  const n=S.channels.length;
+  return '<thead><tr class="grp"><th class="sticky-a grp-in" colspan="2">Item</th><th class="grp-in" colspan="3">Entrada</th>'+
+    '<th class="grp-out" colspan="'+n+'">Preço final por loja (menor preço que cumpre a margem)</th><th class="grp-in" colspan="7">Ajustes do item</th><th class="grp-in"></th></tr>'+
+    '<tr class="cols"><th class="sticky-a"></th><th class="sticky-b">Produto e SKU</th><th>Custo (R$)</th><th>Peso (kg)</th><th>C × L × A (cm)</th>'+
+    S.channels.map(ch=>'<th class="resh"><div class="chname"><span>'+esc(ch.label)+'</span><span class="pill '+esc(ch.status)+'">'+esc(ch.status)+'</span></div></th>').join('')+
+    '<th class="adj">Empresa</th><th>Extras (R$)</th><th>Imposto (%)</th><th>Margem (%)</th><th title="Soma (ou subtrai) pontos percentuais na comissão do Mercado Livre. Use −1,5 para categorias de 12,5%/17,5%.">Ajuste ML (p.p.)</th><th title="Se o anúncio participa do programa de frete grátis da Shopee (o vendedor paga o frete por peso a partir de R$ 100).">Frete grátis Shopee</th><th title="Valor que a Amazon cobra do cliente pelo envio (campo “Cobrança do envio” em Gerenciar produtos). Entra como receita só no Amazon DBA; a comissão continua sobre o preço do item.">Frete pago pelo cliente (Amazon DBA, R$)</th><th></th></tr></thead>';
+}
+function rowHTML(it, i){
+  return '<tr class="item" data-i="'+i+'">'+
+    '<td class="sticky-a"><button class="ico" type="button" data-act="toggle" aria-label="Ver a conta completa" aria-expanded="false">▸</button></td>'+
+    '<td class="sticky-b"><div class="nm"><input class="cell-in" type="text" data-f="name" value="'+esc(it.name)+'" aria-label="Produto" placeholder="Nome do produto">'+(it.example?'<span class="tag">exemplo</span>':'')+'</div>'+
+    '<input class="cell-in sku" type="text" data-f="sku" value="'+esc(it.sku)+'" aria-label="SKU" placeholder="SKU"></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="cost" value="'+esc(it.cost)+'" aria-label="Custo em reais" placeholder="0,00"></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="weight" value="'+esc(it.weight)+'" aria-label="Peso em quilos" placeholder="0,00"></td>'+
+    '<td><div class="dims"><input class="cell-in num" type="text" inputmode="decimal" data-f="l" value="'+esc(it.l)+'" aria-label="Comprimento em cm" placeholder="C"><span>×</span><input class="cell-in num" type="text" inputmode="decimal" data-f="w" value="'+esc(it.w)+'" aria-label="Largura em cm" placeholder="L"><span>×</span><input class="cell-in num" type="text" inputmode="decimal" data-f="h" value="'+esc(it.h)+'" aria-label="Altura em cm" placeholder="A"></div></td>'+
+    S.channels.map(ch=>'<td class="res" data-ch="'+esc(ch.id)+'"></td>').join('')+
+    '<td class="adj"><select class="cell-in" data-f="company" aria-label="Empresa">'+companyOptions(it.company)+'</select></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="extra" value="'+esc(it.extra)+'" aria-label="Extras em reais" placeholder="0,00"></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="tax" value="'+esc(it.tax)+'" aria-label="Imposto em porcentagem" placeholder=""></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="margin" value="'+esc(it.margin)+'" aria-label="Margem alvo em porcentagem" placeholder=""></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="mlAdj" value="'+esc(it.mlAdj||'')+'" aria-label="Ajuste na comissão do Mercado Livre em pontos percentuais" placeholder="0"></td>'+
+    '<td><select class="cell-in" data-f="shopeeFrete" aria-label="Frete grátis Shopee"><option value=""'+(noShip(it)?'':' selected')+'>Participa</option><option value="nao"'+(noShip(it)?' selected':'')+'>Não participa</option></select></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="shipIn" value="'+esc(it.shipIn||'')+'" aria-label="Frete cobrado do cliente na Amazon DBA em reais" placeholder="0,00"></td>'+
+    '<td><button class="ico del" type="button" data-act="del" aria-label="Remover item">×</button></td>'+
+    '</tr>';
+}
+function renderTable(){
+  const g=$('#grid');
+  g.innerHTML=theadHTML()+'<tbody>'+items.map(rowHTML).join('')+'</tbody>';
+  if(!items.length){ g.querySelector('tbody').innerHTML='<tr><td colspan="'+(13+S.channels.length)+'" style="padding:28px;text-align:center;color:var(--ink-2)">Nenhum item. Importe uma planilha, cole do Excel ou use “+ Item”.</td></tr>'; }
+  $$('#grid tbody tr.item').forEach(function(tr){
+    updateRow(tr);
+    const it=items[+tr.dataset.i];
+    if(it && ui.open.has(it.id)) openDetail(tr,true);
+  });
+  $('#notice-ex').hidden=!items.some(i=>i.example);
+  $('#in-margin').value=showIn(S.margin);
+  $('#in-charm').checked=!!S.charm;
+  $('#in-auto').checked=isAuto();
+  ui.stale.clear(); updatePending();
+  renderCoBar();
+  applyFilter();
+}
+function cellHTML(r, ch, isLow){
+  if(!r.ok) return '<div class="price na">—</div><div class="sub">'+esc(r.reason)+'</div>';
+  const e=r.ev;
+  let h='<div class="price">'+brl(e.price)+(isLow?'<span class="tag">menor</span>':'')+(r.flags.length?'<span class="flag" title="'+esc(r.flags.join(' '))+'">!</span>':'')+'</div>'+
+    '<div class="sub">lucro '+brl(e.net)+' · '+pct1(e.margin)+'</div>';
+  if(r.hint) h+='<div class="hint">Na próxima faixa as taxas caem: em '+brl(r.hint.price)+' o lucro é '+brl(r.hint.net)+' ('+pct1(r.hint.margin)+')</div>';
+  return h;
+}
+function updateRow(tr){
+  const it=items[+tr.dataset.i]; if(!it) return;
+  const c=calcAll(it);
+  S.channels.forEach(function(ch){
+    const td=tr.querySelector('td.res[data-ch="'+ch.id+'"]'); if(!td) return;
+    td.innerHTML=cellHTML(c.res[ch.id],ch,c.low===ch.id);
+    td.classList.toggle('low',c.low===ch.id);
+  });
+  refreshPlaceholders(tr);
+  ui.stale.delete(it.id); tr.classList.remove('stale');
+  const d=tr.nextElementSibling;
+  if(d && d.classList.contains('detail')) fillDetail(d,it,c);
+  updatePending();
+}
+function refreshPlaceholders(tr){
+  const it=items[+tr.dataset.i]; if(!it) return;
+  const co=companyOf(it);
+  const tin=tr.querySelector('[data-f="tax"]'); if(tin) tin.placeholder=showIn(co.tax);
+  const min=tr.querySelector('[data-f="margin"]'); if(min) min.placeholder=showIn(effMargin(Object.assign({},it,{margin:''})));
+}
+function updateAllRows(){ $$('#grid tbody tr.item').forEach(updateRow); ui.stale.clear(); ui.dirty=false; updatePending(); }
+function updatePending(){
+  const n=ui.stale.size, b=$('#btn-recalc'); if(!b) return;
+  b.textContent=n?('Atualizar cálculo ('+n+')'):'Atualizar cálculo';
+  b.classList.toggle('primary',n>0);
+  $('#stale-msg').textContent=n?((n===1?'1 item alterado':n+' itens alterados')+': os preços mostrados estão desatualizados. Clique em Atualizar cálculo.'):'';
+}
+function markStale(tr){ const it=items[+tr.dataset.i]; if(!it) return; ui.stale.add(it.id); tr.classList.add('stale'); updatePending(); }
+function markAllStale(){ $$('#grid tbody tr.item').forEach(function(tr){ refreshPlaceholders(tr); markStale(tr); }); }
+function isAuto(){ return S.auto!==false; }
+function onDataChange(tr){ refreshPlaceholders(tr); if(isAuto()) updateRow(tr); else markStale(tr); }
+function refreshCalc(silent){ const n=ui.stale.size; updateAllRows(); if(!silent) toast(n?'Cálculo atualizado.':'Tudo já estava atualizado.'); }
+
+function detailHTML(it,c){
+  const cols=S.channels;
+  const row=(label,fn,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td>'+cols.map(function(ch){ const r=c.res[ch.id]; return '<td'+'>'+(r.ok?fn(r):'—')+'</td>'; }).join('')+'</tr>';
+  const neg=v=>'<span class="neg">− '+brl(v)+'</span>';
+  return '<table class="dtable"><thead><tr><th></th>'+cols.map(ch=>'<th>'+esc(ch.label)+'</th>').join('')+'</tr></thead><tbody>'+
+    row('Preço final',r=>brl(r.ev.price),'tot')+
+    row('Custo do produto',r=>neg(r.ev.cost))+
+    row('Extras',r=>neg(r.ev.extra))+
+    row('Imposto',r=>neg(r.ev.tax)+' <small>('+dec(r.taxPct,1)+'%)</small>')+
+    row('Comissão',r=>neg(r.ev.commission)+' <small>('+dec(r.ev.commissionPct,1)+'%)</small>')+
+    row('Taxa fixa',r=>neg(r.ev.fixed))+
+    row('Extra do canal',r=>neg(r.ev.extraFee))+
+    row('Frete',r=>r.shipNone?'—':neg(r.ev.ship)+' <small>('+dec(r.bw.kg,2)+' kg)</small>')+
+    row('Frete pago pelo cliente',r=>r.ev.shipIn>0?'+'+brl(r.ev.shipIn):'—')+
+    row('Repasse do canal (preço − tarifas − frete)',r=>brl(r.ev.receive),'tot')+
+    row('Lucro líquido (repasse − imposto − custos)',r=>brl(r.ev.net),'tot')+
+    row('Margem sobre o preço',r=>pct1(r.ev.margin),'')+
+    '</tbody></table>';
+}
+function fillDetail(dtr,it,c){ dtr.firstElementChild.innerHTML='<div class="scroll-x">'+detailHTML(it,c||calcAll(it))+'</div>'; }
+function openDetail(tr,force){
+  const it=items[+tr.dataset.i]; if(!it) return;
+  const nxt=tr.nextElementSibling;
+  const btn=tr.querySelector('[data-act="toggle"]');
+  if(nxt && nxt.classList.contains('detail')){
+    if(force) return;
+    nxt.remove(); ui.open.delete(it.id); btn.textContent='▸'; btn.setAttribute('aria-expanded','false'); return;
+  }
+  tr.insertAdjacentHTML('afterend','<tr class="detail"><td colspan="'+(13+S.channels.length)+'"></td></tr>');
+  fillDetail(tr.nextElementSibling,it);
+  ui.open.add(it.id); btn.textContent='▾'; btn.setAttribute('aria-expanded','true');
+}
+
+/* eventos da tabela */
+const grid=$('#grid');
+grid.addEventListener('input',function(e){
+  const t=e.target, f=t.dataset&&t.dataset.f; if(!f) return;
+  const tr=t.closest('tr.item'); if(!tr) return;
+  const it=items[+tr.dataset.i]; if(!it) return;
+  it[f]=t.value;
+  if(it.example){ it.example=false; const tg=tr.querySelector('.sticky-b .tag'); if(tg) tg.remove(); $('#notice-ex').hidden=!items.some(i=>i.example); }
+  onDataChange(tr); save();
+});
+grid.addEventListener('change',function(e){
+  const t=e.target; if(t.dataset&&(t.dataset.f==='company'||t.dataset.f==='shopeeFrete')){ const tr=t.closest('tr.item'); const it=items[+tr.dataset.i]; it[t.dataset.f]=t.value; onDataChange(tr); save(); if(t.dataset.f==='company') companyMoved(it); }
+});
+grid.addEventListener('keydown',function(e){
+  if(e.key==='Enter' && e.target.dataset && e.target.dataset.f && e.target.tagName==='INPUT'){ e.preventDefault(); if(ui.stale.size) refreshCalc(true); }
+});
+grid.addEventListener('click',function(e){
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const tr=b.closest('tr.item'); if(!tr) return;
+  if(b.dataset.act==='toggle') openDetail(tr);
+  if(b.dataset.act==='del'){ const it=items[+tr.dataset.i]; ui.open.delete(it.id); items.splice(+tr.dataset.i,1); renderTable(); save(); }
+});
+
+/* toolbar */
+$('#in-margin').addEventListener('input',function(e){ const v=num(e.target.value); S.margin=isNaN(v)?0:v; if(isAuto()) updateAllRows(); else markAllStale(); save(); });
+$('#in-charm').addEventListener('change',function(e){ S.charm=e.target.checked; if(isAuto()) updateAllRows(); else markAllStale(); save(); });
+$('#btn-recalc').addEventListener('click',function(){ refreshCalc(); });
+$('#in-auto').addEventListener('change',function(e){ S.auto=e.target.checked; save(); if(S.auto) refreshCalc(true); });
+$('#btn-add').addEventListener('click',function(){
+  items=items.filter(i=>!i.example||items.some(x=>!x.example)); // mantém exemplos só se não houver itens reais
+  resetSearch();
+  items.push({id:uid(),name:'',sku:'',company:defaultCoId(),cost:'',extra:'',tax:'',margin:'',weight:'',l:'',w:'',h:''});
+  renderTable(); save();
+  const last=$$('#grid tbody tr.item').pop(); if(last){ const n=last.querySelector('[data-f="name"]'); if(n) n.focus(); }
+});
+function updateClearLabel(){ const b=$('#btn-clear'); if(b && b.dataset.armed!=='1') b.textContent=(coSel()==='all'?'Limpar itens':'Limpar itens da empresa'); }
+$('#btn-clear').addEventListener('click',function(){
+  if(!scoped().length) return;
+  if(this.dataset.armed!=='1'){ this.dataset.armed='1'; this.textContent=(coSel()==='all'?'Confirmar: apagar todos':'Confirmar: apagar desta empresa'); const b=this; setTimeout(function(){ b.dataset.armed='0'; updateClearLabel(); },3500); return; }
+  this.dataset.armed='0';
+  const gone=new Set(scoped().map(i=>i.id));
+  items=items.filter(i=>!gone.has(i.id)); gone.forEach(id=>ui.open.delete(id));
+  updateClearLabel(); renderTable(); save(); toast('Itens apagados.');
+});
+$('#cobar').addEventListener('click',function(e){
+  const b=e.target.closest('[data-co]'); if(!b) return;
+  S.coSel=b.dataset.co;
+  const cb=$('#btn-clear'); if(cb) cb.dataset.armed='0';
+  save(); renderCoBar(); applyFilter(); applyFilter2();
+  const nb=$$('#cobar [data-co]').find(x=>x.dataset.co===S.coSel); if(nb) nb.focus();
+});
+$('#cobar').addEventListener('keydown',function(e){
+  if(e.key!=='ArrowRight'&&e.key!=='ArrowLeft') return;
+  const tabs=$$('#cobar [data-co]'); const i=tabs.findIndex(x=>x===document.activeElement); if(i<0) return;
+  e.preventDefault(); tabs[(i+(e.key==='ArrowRight'?1:tabs.length-1))%tabs.length].click();
+});
+
+/* ====================== BUSCA ====================== */
+function normQ(s){ return String(s==null?'':s).normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+function searchTerms(){ return String(ui.q||'').split(/[\s,;]+/).map(normQ).filter(Boolean); }
+function applyFilter(){
+  const terms=searchTerms(); let shown=0, n=0;
+  $$('#grid tbody tr.item').forEach(function(tr){
+    const it=items[+tr.dataset.i]; if(!it) return;
+    const inCo=inScope(it); if(inCo) n++;
+    const hay=normQ(it.sku), hayName=normQ(it.name);
+    const ok=inCo && (!terms.length || terms.some(t=>hay.indexOf(t)>=0 || hayName.indexOf(t)>=0));
+    tr.hidden=!ok;
+    const d=tr.nextElementSibling; if(d && d.classList.contains('detail')) d.hidden=!ok;
+    if(ok) shown++;
+  });
+  $('#search-count').textContent=terms.length?(shown+' de '+n+(n===1?' item':' itens')):(n+(n===1?' item':' itens'));
+  $('#btn-search-clear').hidden=!terms.length;
+  $('#no-match').hidden=!(terms.length && shown===0 && n>0);
+  $('#no-co').hidden=!(items.length>0 && n===0);
+}
+function resetSearch(){ ui.q=''; const i=$('#in-search'); if(i) i.value=''; }
+$('#in-search').addEventListener('input',function(e){ ui.q=e.target.value; applyFilter(); });
+$('#in-search').addEventListener('keydown',function(e){ if(e.key==='Escape'){ resetSearch(); applyFilter(); } });
+$('#btn-search-clear').addEventListener('click',function(){ resetSearch(); applyFilter(); $('#in-search').focus(); });
+
+/* ====================== IMPORTAÇÃO ====================== */
+function normH(s){ return String(s==null?'':s).normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().replace(/[^a-z0-9]/g,''); }
+const HMAP={
+  sku:['sku','codigo','cod','referencia','ref'],
+  name:['produto','nome','descricao','titulo','item'],
+  company:['empresa','cnpj','conta','loja','razaosocial'],
+  cost:['custo','precodecusto','custounitario','precocusto'],
+  extra:['extras','extra','embalagem','outroscustos','custosextras'],
+  tax:['imposto','impostos','aliquota','tributo'],
+  margin:['margem','margemalvo','lucro'],
+  shopeeFrete:['fretegratisshopee','fretegratis','participafrete'],
+  shipIn:['fretecliente','fretepagopelocliente','fretecobrado','cobrancadoenvio','fretecobradodocliente'],
+  price:['vendasugestao','precodevenda','precovenda','venda'],
+  mlAdj:['ajusteml','ajustemercadolivre','ajustecomissaoml'],
+  weight:['peso','pesokg','pesobruto'],
+  l:['comprimento','comp','profundidade'],
+  w:['largura','larg'],
+  h:['altura','alt']
+};
+function mapHeader(h){
+  const n=normH(h); if(!n) return null;
+  for(const f in HMAP){ for(const k of HMAP[f]){ if(n===k || (k.length>=4 && n.indexOf(k)===0)) return f; } }
+  return null;
+}
+function matchCompany(v){
+  const n=normH(v); if(!n) return defaultCoId();
+  const c=S.companies.find(c=>{ const cn=normH(c.name); return cn && (cn===n || cn.indexOf(n)>=0 || n.indexOf(cn)>=0); });
+  return c?c.id:defaultCoId();
+}
+function importAOA(aoa){
+  let hi=-1, map=null;
+  for(let r=0;r<Math.min(aoa.length,6);r++){
+    const seen={}; const m=aoa[r].map(mapHeader).map(function(f){ if(!f||seen[f]) return null; seen[f]=1; return f; }); const known=m.filter(Boolean);
+    if(known.length>=2 && (known.includes('cost')||known.includes('name'))){ hi=r; map=m; break; }
+  }
+  if(hi<0){ toast('Não achei o cabeçalho. Use colunas como Produto, Custo, Peso, Comprimento, Largura e Altura (baixe o modelo).'); return 0; }
+  const out=[];
+  for(let r=hi+1;r<aoa.length;r++){
+    const row=aoa[r]; if(!row||row.every(c=>String(c).trim()==='')) continue;
+    const it={id:uid(),name:'',sku:'',company:defaultCoId(),cost:'',extra:'',tax:'',margin:'',mlAdj:'',shopeeFrete:'',shipIn:'',price:'',weight:'',l:'',w:'',h:''};
+    map.forEach(function(f,c){
+      if(!f) return; const v=row[c]; if(v==null) return;
+      if(f==='company') it.company=matchCompany(v);
+      else it[f]=(typeof v==='number')?String(v).replace('.',','):String(v).trim();
+    });
+    if(!it.name && !it.sku) continue;
+    out.push(it);
+  }
+  if(!out.length){ toast('O cabeçalho foi lido, mas não há linhas com produto ou SKU.'); return 0; }
+  resetSearch();
+  items=items.filter(i=>!i.example).concat(out);
+  renderTable(); save();
+  const outside=out.filter(i=>!inScope(i)).length;
+  toast(out.length+(out.length===1?' item importado.':' itens importados.')+(outside?(' '+outside+(outside===1?' ficou':' ficaram')+' em outra empresa (veja em “Todas”).'):''));
+  return out.length;
+}
+function parseDelimited(text){
+  const first=text.split(/\r?\n/).find(l=>l.trim())||'';
+  const cnt=ch=>(first.split(ch).length-1);
+  let d='\t'; if(cnt('\t')===0){ d=cnt(';')>=cnt(',')?';':','; if(cnt(';')===0&&cnt(',')===0) d='\t'; }
+  const rows=[]; let cur=[], cell='', q=false;
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){ cell+='"'; i++; } else q=false; } else cell+=c; }
+    else if(c==='"') q=true;
+    else if(c===d){ cur.push(cell); cell=''; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; cur.push(cell); rows.push(cur); cur=[]; cell=''; }
+    else cell+=c;
+  }
+  if(cell!==''||cur.length){ cur.push(cell); rows.push(cur); }
+  return rows;
+}
+$('#btn-import').addEventListener('click',function(){ $('#file-in').click(); });
+$('#file-in').addEventListener('change',function(e){
+  const f=e.target.files&&e.target.files[0]; if(!f) return;
+  const isText=/\.(csv|txt)$/i.test(f.name);
+  const rd=new FileReader();
+  rd.onerror=function(){ toast('Não consegui abrir o arquivo.'); };
+  rd.onload=function(){
+    try{
+      if(isText){ importAOA(parseDelimited(String(rd.result))); }
+      else{
+        if(typeof XLSX==='undefined'){ toast('A leitura de Excel não carregou. Use “Colar do Excel” ou um arquivo .csv.'); return; }
+        const wb=XLSX.read(rd.result,{type:'array'});
+        const ws=wb.Sheets[wb.SheetNames[0]];
+        importAOA(XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:''}));
+      }
+    }catch(err){ toast('Não consegui ler o arquivo. Confira se é .xlsx ou .csv com cabeçalho.'); }
+    e.target.value='';
+  };
+  if(isText) rd.readAsText(f); else rd.readAsArrayBuffer(f);
+});
+$('#btn-paste').addEventListener('click',function(){ const b=$('#paste-box'); b.hidden=!b.hidden; if(!b.hidden) $('#paste-area').focus(); });
+$('#btn-paste-cancel').addEventListener('click',function(){ $('#paste-box').hidden=true; });
+$('#btn-paste-go').addEventListener('click',function(){
+  const t=$('#paste-area').value; if(!t.trim()){ toast('Cole as linhas primeiro.'); return; }
+  if(importAOA(parseDelimited(t))){ $('#paste-area').value=''; $('#paste-box').hidden=true; }
+});
+
+/* ====================== EXPORTAÇÃO ====================== */
+function buildResultsAOA(numeric){
+  const head=['SKU','Produto','Empresa','Custo','Extras','Imposto %','Margem alvo %','Peso kg','C cm','L cm','A cm','Ajuste ML p.p.','Frete grátis Shopee'];
+  S.channels.forEach(ch=>{ head.push(ch.label+' preço'); head.push(ch.label+' lucro R$'); head.push(ch.label+' margem %'); });
+  const rows=[head];
+  const f=(v,n)=>numeric?(isNaN(v)?'':Math.round(v*Math.pow(10,n))/Math.pow(10,n)):(isNaN(v)?'':dec(v,n));
+  scoped().forEach(function(it){
+    const c=calcAll(it); const co=companyOf(it);
+    const t=num(it.tax);
+    const r=[it.sku,it.name,co.name,f(num(it.cost),2),f(num(it.extra),2),f((it.tax!==''&&!isNaN(t))?t:co.tax,2),f(effMargin(it),2),f(num(it.weight),3),f(num(it.l),1),f(num(it.w),1),f(num(it.h),1),f(num(it.mlAdj)||0,2),noShip(it)?'Não participa':'Participa'];
+    S.channels.forEach(function(ch){ const x=c.res[ch.id]; if(x.ok){ r.push(f(x.ev.price,2)); r.push(f(x.ev.net,2)); r.push(f(x.ev.margin*100,2)); } else { r.push(''); r.push(''); r.push(''); } });
+    rows.push(r);
+  });
+  return rows;
+}
+function buildAssumptionsAOA(){
+  const rows=[['Canal','Status dos números','Faixa a partir de (R$)','Comissão %','Taxa fixa R$','Extra do canal %','Frete: preço a partir de R$','Frete: até (kg)','Frete: custo R$','Observação']];
+  S.channels.forEach(function(ch){
+    const r=resolveChannel(S,ch);
+    const n=Math.max(r.bands.length,r.ship.length,1);
+    for(let i=0;i<n;i++){
+      const b=r.bands[i], s=r.ship[i];
+      rows.push([i===0?ch.label:'',i===0?ch.status:'',b?b.from:'',b?b.pct:'',b?b.fixed:'',i===0?r.extraPct:'',s?s.from:'',s?s.upTo:'',s?s.cost:'',i===0?(ch.note||''):'']);
+    }
+  });
+  return rows;
+}
+function xlsxBuffer(sheets){
+  const wb=XLSX.utils.book_new();
+  sheets.forEach(function(sh){ const ws=XLSX.utils.aoa_to_sheet(sh.aoa); ws['!cols']=sh.cols||undefined; XLSX.utils.book_append_sheet(wb,ws,sh.name); });
+  return XLSX.write(wb,{type:'array',bookType:'xlsx'});
+}
+function saveFile(filename,data){
+  try{
+    const blob=new Blob([data],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+    const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=filename; document.body.appendChild(a); a.click();
+    setTimeout(function(){ URL.revokeObjectURL(a.href); a.remove(); },1500);
+    toast('Arquivo baixado: '+filename);
+  }catch(err){ toast('Não foi possível gerar o arquivo. Use “Copiar tabela”.'); }
+}
+$('#btn-export').addEventListener('click',function(){
+  if(typeof XLSX==='undefined'){ toast('O gerador de Excel não carregou. Use “Copiar tabela”.'); return; }
+  if(!scoped().length){ toast('Não há itens para exportar.'); return; }
+  if(ui.stale.size) refreshCalc(true);
+  const buf=xlsxBuffer([{name:'Preços',aoa:buildResultsAOA(true)},{name:'Premissas',aoa:buildAssumptionsAOA()}]);
+  saveFile('precos-por-loja'+coFileSuffix()+'.xlsx',buf);
+});
+$('#btn-template').addEventListener('click',function(){
+  if(typeof XLSX==='undefined'){ toast('O gerador de Excel não carregou. Use “Colar do Excel” com as colunas: Produto, Custo, Peso, Comprimento, Largura, Altura.'); return; }
+  const aoa=[['SKU','Produto','Empresa','Custo','Extras','Imposto %','Margem %','Peso kg','Comprimento cm','Largura cm','Altura cm','Preço de venda'],
+    ['ABC-001','Ração cães adultos 10 kg',(S.companies[0]||{}).name||'',98.5,1.5,'','',10.2,50,35,12,189.9],
+    ['ABC-002','Petisco cães 500 g',(S.companies[1]||S.companies[0]||{}).name||'',14.5,0.8,'',25,0.52,22,14,8,''],
+    ['','Deixe Imposto % e Margem % vazios para usar o imposto e a margem da empresa (ou a margem padrão da tela). O Preço de venda é opcional: serve para a aba Lucro no preço de venda.','','','','','','','','','','']];
+  saveFile('modelo-itens.xlsx',xlsxBuffer([{name:'Itens',aoa:aoa}]));
+});
+$('#btn-copy').addEventListener('click',function(){
+  if(!scoped().length){ toast('Não há itens para copiar.'); return; }
+  if(ui.stale.size) refreshCalc(true);
+  const txt=buildResultsAOA(false).map(r=>r.join('\t')).join('\n');
+  const done=()=>toast('Tabela copiada. Cole no Excel ou no Google Planilhas.');
+  const fail=function(){
+    const b=$('#paste-box'); b.hidden=false; const a=$('#paste-area'); a.value=txt; a.focus(); a.select();
+    toast('Seu navegador bloqueou a cópia. O texto está na caixa: selecione e copie (Ctrl+C).');
+  };
+  try{ navigator.clipboard.writeText(txt).then(done,fail); }catch(e){ fail(); }
+});
+
+/* ====================== CONFIGURAÇÕES ====================== */
+const STATUS_TXT={confirmado:'Números confirmados em fonte oficial',estimado:'Fonte secundária ou parte estimada',confirmar:'Contém valores de referência: preencha com a sua tabela'};
+function nIn(v,attrs,label){ return '<input class="n" type="text" inputmode="decimal" autocomplete="off" value="'+esc(showIn(v))+'" aria-label="'+esc(label)+'" '+attrs+'>'; }
+function chBodyHTML(ch){
+  const derivedBands=!!ch.bandsRef, derivedShip=!!ch.shipRef;
+  const refLabel=id=>{ const c=S.channels.find(x=>x.id===id); return c?c.label:id; };
+  let h='<p class="note">'+esc(ch.note||'')+'</p><div class="two">';
+  // comissão
+  h+='<div><span class="lbl">Comissão e taxa fixa por faixa de preço</span>';
+  if(derivedBands){
+    h+='<p class="help">Usa as faixas de '+esc(refLabel(ch.bandsRef))+'.'+('pctAdd' in ch?' A comissão de cada faixa soma:':'')+'</p>';
+    if('pctAdd' in ch) h+='<label class="field-inline">+ <input class="n" type="text" inputmode="decimal" style="width:70px;text-align:right" value="'+esc(showIn(ch.pctAdd))+'" data-k="pctAdd" data-ch="'+esc(ch.id)+'" aria-label="Pontos percentuais somados à comissão"> p.p.</label>';
+  }else{
+    h+='<div class="scroll-x"><table class="mini"><thead><tr><th>A partir de (R$)</th><th>Comissão (%)</th><th>Taxa fixa (R$)</th><th></th></tr></thead><tbody>'+
+      ch.bands.map((b,i)=>'<tr><td>'+nIn(b.from,'data-k="b" data-p="from" data-ch="'+esc(ch.id)+'" data-idx="'+i+'"','A partir de')+'</td><td>'+nIn(b.pct,'data-k="b" data-p="pct" data-ch="'+esc(ch.id)+'" data-idx="'+i+'"','Comissão')+'</td><td>'+nIn(b.fixed,'data-k="b" data-p="fixed" data-ch="'+esc(ch.id)+'" data-idx="'+i+'"','Taxa fixa')+'</td><td>'+(ch.bands.length>1?'<button class="ico del" type="button" data-act="band-del" data-ch="'+esc(ch.id)+'" data-idx="'+i+'" aria-label="Remover faixa">×</button>':'')+'</td></tr>').join('')+
+      '</tbody></table></div><div class="row-actions"><button class="btn small" type="button" data-act="band-add" data-ch="'+esc(ch.id)+'">+ Faixa</button></div>'+
+      '<p class="help">A primeira faixa deve começar em 0. Cada faixa vale até o início da próxima.</p>';
+  }
+  h+='<div style="margin-top:12px"><label class="lbl" for="x-'+esc(ch.id)+'">Extra do canal (% sobre o preço)</label><input class="n" style="width:90px;text-align:right" id="x-'+esc(ch.id)+'" type="text" inputmode="decimal" value="'+esc(showIn(ch.extraPct||0))+'" data-k="extra" data-ch="'+esc(ch.id)+'"><p class="help">Programas opcionais, como frete grátis ou campanhas em destaque.</p></div></div>';
+  // frete
+  h+='<div><span class="lbl">Frete por peso cobrado</span>';
+  if(derivedShip){ h+='<p class="help">Usa a tabela de frete e o divisor de '+esc(refLabel(ch.shipRef))+'.</p>'; }
+  else{
+    h+='<div class="scroll-x"><table class="mini"><thead><tr><th>Preço a partir de (R$)</th><th>Até (kg)</th><th>Custo (R$)</th><th></th></tr></thead><tbody>'+
+      (ch.ship||[]).map((s,i)=>'<tr><td>'+nIn(s.from||0,'data-k="s" data-p="from" data-ch="'+esc(ch.id)+'" data-idx="'+i+'"','Preço a partir de')+'</td><td>'+nIn(s.upTo,'data-k="s" data-p="upTo" data-ch="'+esc(ch.id)+'" data-idx="'+i+'"','Peso até')+'</td><td>'+nIn(s.cost,'data-k="s" data-p="cost" data-ch="'+esc(ch.id)+'" data-idx="'+i+'"','Custo do frete')+'</td><td><button class="ico del" type="button" data-act="ship-del" data-ch="'+esc(ch.id)+'" data-idx="'+i+'" aria-label="Remover faixa de peso">×</button></td></tr>').join('')+
+      '</tbody></table></div><div class="row-actions"><button class="btn small" type="button" data-act="ship-add" data-ch="'+esc(ch.id)+'">+ Faixa de peso</button></div>'+
+      ((ch.ship||[]).length?'<p class="help">Cada valor em “Preço a partir de” abre uma tabela de peso própria (ex.: uma para 0 e outra para 79). O peso usa a primeira faixa cujo limite cobre o item.</p>':'<p class="help">Sem faixas: o frete por item é zero neste canal (subsidiado ou pago pelo cliente).</p>')+
+      '<div style="margin-top:12px"><label class="lbl" for="d-'+esc(ch.id)+'">Divisor do peso cubado</label><input class="n" style="width:90px;text-align:right" id="d-'+esc(ch.id)+'" type="text" inputmode="decimal" value="'+esc(showIn(ch.divisor||6000))+'" data-k="div" data-ch="'+esc(ch.id)+'"><p class="help">Peso cubado = C × L × A (cm) ÷ divisor.</p></div>'+
+      '<div style="margin-top:12px"><label class="lbl" for="t-'+esc(ch.id)+'">Tara da embalagem (kg)</label><input class="n" style="width:90px;text-align:right" id="t-'+esc(ch.id)+'" type="text" inputmode="decimal" value="'+esc(showIn(ch.tare||0))+'" data-k="tare" data-ch="'+esc(ch.id)+'"><p class="help">Somada ao peso cobrado (a Amazon soma 20 g = 0,02).</p></div>'+
+      '<div style="margin-top:12px"><label class="lbl" for="sd-'+esc(ch.id)+'">Desconto no frete (%)</label><input class="n" style="width:90px;text-align:right" id="sd-'+esc(ch.id)+'" type="text" inputmode="decimal" value="'+esc(showIn(ch.shipDiscPct||0))+'" data-k="sdp" data-ch="'+esc(ch.id)+'"> <span class="help">para preços a partir de R$</span> <input class="n" style="width:90px;text-align:right" type="text" inputmode="decimal" value="'+esc(showIn(ch.shipDiscFrom||0))+'" data-k="sdf" data-ch="'+esc(ch.id)+'" aria-label="Preço a partir do qual o desconto vale"><p class="help">Reduz o custo do frete das faixas a partir desse preço (ex.: redução promocional da Amazon).</p></div>';
+  }
+  h+='</div></div><div class="row-actions"><button class="btn small" type="button" data-act="reset-ch" data-ch="'+esc(ch.id)+'">Restaurar padrão deste canal</button></div>';
+  return h;
+}
+function renderConfig(){
+  const openIds=new Set($$('#cfg details.chcard[open]').map(d=>d.dataset.ch));
+  const cfg=$('#cfg');
+  let h='<div class="card"><h2>Empresas e imposto</h2><p class="lead">Cadastre aqui cada CNPJ (ou CPF) com o seu percentual efetivo de imposto e a sua margem alvo. O imposto vale para todos os canais e muda só de uma empresa para outra. Margem em branco usa a margem padrão da tela de itens. Na tabela de itens, os campos Imposto e Margem de uma linha sobrepõem os da empresa.</p>'+
+    '<div class="scroll-x"><table class="mini"><thead><tr><th>Empresa</th><th>Imposto (%)</th><th>Margem alvo (%)</th><th></th></tr></thead><tbody>'+
+    S.companies.map((c,i)=>'<tr><td><input type="text" value="'+esc(c.name)+'" data-k="co-name" data-idx="'+i+'" aria-label="Nome da empresa"></td><td>'+nIn(c.tax,'data-k="co-tax" data-idx="'+i+'" style="max-width:110px"','Imposto da empresa')+'</td><td>'+nIn(c.margin,'data-k="co-margin" data-idx="'+i+'" placeholder="'+esc(showIn(S.margin))+'" style="max-width:110px"','Margem alvo da empresa')+'</td><td>'+(S.companies.length>1?'<button class="ico del" type="button" data-act="co-del" data-idx="'+i+'" aria-label="Remover empresa">×</button>':'')+'</td></tr>').join('')+
+    '</tbody></table></div><div class="row-actions"><button class="btn small" type="button" data-act="co-add">+ Empresa</button></div></div>';
+  h+='<div><div style="display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;margin-bottom:10px"><h2 style="font-size:18px">Canais</h2><span class="help" style="margin:0">Ordem de confiança: <span class="pill confirmado">confirmado</span> <span class="pill estimado">estimado</span> <span class="pill confirmar">confirmar</span></span><span class="spacer"></span><button class="btn small" type="button" data-act="reset-all">Restaurar todos os canais</button></div>'+
+    S.channels.map(ch=>'<details class="chcard" data-ch="'+esc(ch.id)+'"'+(openIds.has(ch.id)?' open':'')+'><summary><span class="nm">'+esc(ch.label)+'</span><span class="pill '+esc(ch.status)+'" title="'+esc(STATUS_TXT[ch.status]||'')+'">'+esc(ch.status)+'</span></summary><div class="chbody">'+chBodyHTML(ch)+'</div></details>').join('')+'</div>';
+  cfg.innerHTML=h;
+}
+const cfgEl=$('#cfg');
+function chById(id){ return S.channels.find(c=>c.id===id); }
+cfgEl.addEventListener('input',function(e){
+  const t=e.target, k=t.dataset&&t.dataset.k; if(!k) return;
+  const idx=+t.dataset.idx; const ch=t.dataset.ch?chById(t.dataset.ch):null;
+  const v=num(t.value), val=isNaN(v)?0:v;
+  if(k==='co-name') S.companies[idx].name=t.value;
+  else if(k==='co-tax') S.companies[idx].tax=val;
+  else if(k==='co-margin') S.companies[idx].margin=(t.value.trim()===''?'':val);
+  else if(k==='b') ch.bands[idx][t.dataset.p]=val;
+  else if(k==='s') ch.ship[idx][t.dataset.p]=val;
+  else if(k==='extra') ch.extraPct=val;
+  else if(k==='div') ch.divisor=val;
+  else if(k==='tare') ch.tare=val;
+  else if(k==='sdp') ch.shipDiscPct=val;
+  else if(k==='sdf') ch.shipDiscFrom=val;
+  else if(k==='pctAdd') ch.pctAdd=val;
+  else return;
+  if(k==='co-name'||k==='co-tax'||k==='co-margin') renderCoBar();
+  ui.dirty=true; save();
+});
+cfgEl.addEventListener('click',function(e){
+  const b=e.target.closest('[data-act]'); if(!b) return;
+  const a=b.dataset.act, idx=+b.dataset.idx, ch=b.dataset.ch?chById(b.dataset.ch):null;
+  if(a==='co-add'){ S.companies.push({id:'c'+Date.now().toString(36),name:'Nova empresa',tax:6,margin:''}); }
+  else if(a==='co-del'){ const gone=S.companies.splice(idx,1)[0]; const first=S.companies[0].id; items.forEach(i=>{ if(i.company===gone.id) i.company=first; }); if(S.coSel===gone.id) S.coSel='all'; }
+  else if(a==='band-add'){ const last=ch.bands[ch.bands.length-1]||{from:0,pct:0,fixed:0}; ch.bands.push({from:(last.from||0)+50,pct:last.pct,fixed:last.fixed}); }
+  else if(a==='band-del'){ ch.bands.splice(idx,1); if(ch.bands.length&&ch.bands[0].from>0) ch.bands[0].from=0; }
+  else if(a==='ship-add'){ const last=(ch.ship||[])[(ch.ship||[]).length-1]||{upTo:0,cost:0}; ch.ship=ch.ship||[]; ch.ship.push({from:last.from||0,upTo:last.upTo+5,cost:last.cost}); }
+  else if(a==='ship-del'){ ch.ship.splice(idx,1); }
+  else if(a==='reset-ch'){ const d=DEFAULT_CHANNELS().find(c=>c.id===ch.id); S.channels[S.channels.indexOf(ch)]=d; }
+  else if(a==='reset-all'){ S.channels=DEFAULT_CHANNELS(); }
+  else return;
+  ui.dirty=true; renderConfig(); renderCoBar(); save();
+});
+
+
+/* ====================== LUCRO NO PREÇO DE VENDA ====================== */
+function calcPriced(it, ch){
+  const c=calcChannel(it,ch);
+  if(!c.ok) return c;
+  const ev=c.ev;
+  return {ok:true, ev:ev, fees:ev.commission+ev.fixed+ev.extraFee+ev.ship, taxPct:c.taxPct, mPct:c.mPct, bw:c.bw, flags:c.flags, shipNone:c.shipNone};
+}
+function calcAllPriced(it){
+  const res={}; let best=null;
+  S.channels.forEach(function(ch){
+    const r=calcPriced(it,ch); res[ch.id]=r;
+    if(r.ok && !ch.noBest && (best===null || r.ev.price<res[best].ev.price-1e-9)) best=ch.id;
+  });
+  return {res:res, best:best};
+}
+function theadLucroHTML(){
+  const n=S.channels.length;
+  return '<thead><tr class="grp"><th class="sticky-a grp-in" colspan="2">Item</th><th class="grp-in" colspan="2">Entrada</th>'+
+    '<th class="grp-out" colspan="'+n+'">Preço de venda ideal, lucro e taxas e comissões por loja (dentro da margem alvo)</th><th class="grp-in"></th></tr>'+
+    '<tr class="cols"><th class="sticky-a"></th><th class="sticky-b">Produto e SKU</th><th>Custo (R$)</th><th title="Vale a margem do item; se estiver em branco, a da empresa; se a empresa não tiver, a margem padrão da aba Itens e preços.">Margem alvo (%)</th>'+
+    S.channels.map(ch=>'<th class="resh"><div class="chname"><span>'+esc(ch.label)+'</span><span class="pill '+esc(ch.status)+'">'+esc(ch.status)+'</span></div></th>').join('')+
+    '<th class="adj">Empresa</th></tr></thead>';
+}
+function rowLucroHTML(it,i){
+  return '<tr class="item" data-i="'+i+'">'+
+    '<td class="sticky-a"><button class="ico" type="button" data-act="toggle" aria-label="Ver a conta completa" aria-expanded="false">▸</button></td>'+
+    '<td class="sticky-b"><div class="nm"><input class="cell-in" type="text" data-f="name" value="'+esc(it.name)+'" aria-label="Produto" placeholder="Nome do produto">'+(it.example?'<span class="tag">exemplo</span>':'')+'</div>'+
+    '<input class="cell-in sku" type="text" data-f="sku" value="'+esc(it.sku)+'" aria-label="SKU" placeholder="SKU"></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="cost" value="'+esc(it.cost)+'" aria-label="Custo em reais" placeholder="0,00"></td>'+
+    '<td><input class="cell-in num" type="text" inputmode="decimal" data-f="margin" value="'+esc(it.margin)+'" aria-label="Margem alvo em porcentagem" placeholder="'+esc(showIn(effMargin(Object.assign({},it,{margin:''}))))+'"></td>'+
+    S.channels.map(ch=>'<td class="res" data-ch="'+esc(ch.id)+'"></td>').join('')+
+    '<td class="adj"><select class="cell-in" data-f="company" aria-label="Empresa">'+companyOptions(it.company)+'</select></td>'+
+    '</tr>';
+}
+function cellLucroHTML(r, isBest){
+  if(!r.ok) return '<div class="price na">—</div><div class="sub">'+esc(r.reason)+'</div>';
+  const e=r.ev;
+  const feePct=e.price>0?r.fees/e.price:0;
+  return '<div class="lbl2">Preço de venda'+(isBest?'<span class="tag">menor</span>':'')+(r.flags.length?'<span class="flag" title="'+esc(r.flags.join(' '))+'">!</span>':'')+'</div>'+
+    '<div class="price">'+brl(e.price)+'</div>'+
+    '<div class="lbl2">Lucro</div>'+
+    '<div class="sub sub2">'+brl(e.net)+' · '+pct1(e.margin)+'</div>'+
+    '<div class="lbl2">Taxas e comissões</div>'+
+    '<div class="sub sub2">'+brl(r.fees)+' · '+pct1(feePct)+'</div>';
+}
+function detailLucroHTML(c){
+  const cols=S.channels;
+  const row=(label,fn,cls)=>'<tr'+(cls?' class="'+cls+'"':'')+'><td>'+label+'</td>'+cols.map(function(ch){ const r=c.res[ch.id]; return '<td>'+(r.ok?fn(r):'—')+'</td>'; }).join('')+'</tr>';
+  const neg=v=>'<span class="neg">− '+brl(v)+'</span>';
+  return '<table class="dtable"><thead><tr><th></th>'+cols.map(ch=>'<th>'+esc(ch.label)+'</th>').join('')+'</tr></thead><tbody>'+
+    row('Preço de venda ideal',r=>brl(r.ev.price),'tot')+
+    row('Comissão',r=>neg(r.ev.commission)+' <small>('+dec(r.ev.commissionPct,1)+'%)</small>')+
+    row('Taxa fixa',r=>neg(r.ev.fixed))+
+    row('Extra do canal',r=>neg(r.ev.extraFee))+
+    row('Frete',r=>r.shipNone?'—':neg(r.ev.ship)+' <small>('+dec(r.bw.kg,2)+' kg)</small>')+
+    row('Taxas e comissões (total)',r=>neg(r.fees),'tot')+
+    row('Frete pago pelo cliente',r=>r.ev.shipIn>0?'+'+brl(r.ev.shipIn):'—')+
+    row('Repasse do canal',r=>brl(r.ev.receive))+
+    row('Imposto',r=>neg(r.ev.tax)+' <small>('+dec(r.taxPct,1)+'%)</small>')+
+    row('Custo do produto',r=>neg(r.ev.cost))+
+    row('Extras',r=>neg(r.ev.extra))+
+    row('Lucro líquido',r=>'<span'+(r.ev.net<0?' class="neg"':'')+'>'+brl(r.ev.net)+'</span>','tot')+
+    row('Margem sobre o preço',r=>'<span'+(r.ev.net<0?' class="neg"':'')+'>'+pct1(r.ev.margin)+'</span>')+
+    '</tbody></table>';
+}
+function updateLucroRow(tr){
+  const it=items[+tr.dataset.i]; if(!it) return;
+  const c=calcAllPriced(it);
+  S.channels.forEach(function(ch){
+    const td=tr.querySelector('td.res[data-ch="'+ch.id+'"]'); if(!td) return;
+    td.innerHTML=cellLucroHTML(c.res[ch.id], c.best===ch.id);
+    td.classList.toggle('best', c.best===ch.id);
+  });
+  const mi=tr.querySelector('[data-f="margin"]'); if(mi) mi.placeholder=showIn(effMargin(Object.assign({},it,{margin:''})));
+  const d=tr.nextElementSibling;
+  if(d && d.classList.contains('detail')) d.firstElementChild.innerHTML='<div class="scroll-x">'+detailLucroHTML(c)+'</div>';
+}
+function openLucroDetail(tr,force){
+  const it=items[+tr.dataset.i]; if(!it) return;
+  const nxt=tr.nextElementSibling, btn=tr.querySelector('[data-act="toggle"]');
+  if(nxt && nxt.classList.contains('detail')){
+    if(force) return;
+    nxt.remove(); ui.open2.delete(it.id); btn.textContent='▸'; btn.setAttribute('aria-expanded','false'); return;
+  }
+  tr.insertAdjacentHTML('afterend','<tr class="detail"><td colspan="'+(5+S.channels.length)+'"></td></tr>');
+  const dd=tr.nextElementSibling; dd.firstElementChild.innerHTML='<div class="scroll-x">'+detailLucroHTML(calcAllPriced(it))+'</div>';
+  ui.open2.add(it.id); btn.textContent='▾'; btn.setAttribute('aria-expanded','true');
+}
+function renderLucro(){
+  const g=$('#grid2');
+  g.innerHTML=theadLucroHTML()+'<tbody>'+items.map(rowLucroHTML).join('')+'</tbody>';
+  if(!items.length) g.querySelector('tbody').innerHTML='<tr><td colspan="'+(5+S.channels.length)+'" style="padding:28px;text-align:center;color:var(--ink-2)">Nenhum item. Importe uma planilha ou use “+ Item” na aba Itens e preços.</td></tr>';
+  $$('#grid2 tbody tr.item').forEach(function(tr){
+    updateLucroRow(tr);
+    const it=items[+tr.dataset.i];
+    if(it && ui.open2.has(it.id)) openLucroDetail(tr,true);
+  });
+  applyFilter2();
+}
+function searchTerms2(){ return String(ui.q2||'').split(/[\s,;]+/).map(normQ).filter(Boolean); }
+function applyFilter2(){
+  const terms=searchTerms2(); let shown=0, n=0;
+  $$('#grid2 tbody tr.item').forEach(function(tr){
+    const it=items[+tr.dataset.i]; if(!it) return;
+    const inCo=inScope(it); if(inCo) n++;
+    const hay=normQ(it.sku), hayName=normQ(it.name);
+    const ok=inCo && (!terms.length || terms.some(t=>hay.indexOf(t)>=0 || hayName.indexOf(t)>=0));
+    tr.hidden=!ok;
+    const d=tr.nextElementSibling; if(d && d.classList.contains('detail')) d.hidden=!ok;
+    if(ok) shown++;
+  });
+  $('#search2-count').textContent=terms.length?(shown+' de '+n+(n===1?' item':' itens')):(n+(n===1?' item':' itens'));
+  $('#btn-search2-clear').hidden=!terms.length;
+  $('#no-co2').hidden=!(items.length>0 && n===0);
+}
+const grid2=$('#grid2');
+grid2.addEventListener('input',function(e){
+  const t=e.target, f=t.dataset&&t.dataset.f; if(!f) return;
+  const tr=t.closest('tr.item'); if(!tr) return;
+  const it=items[+tr.dataset.i]; if(!it) return;
+  it[f]=t.value;
+  if(it.example) it.example=false;
+  updateLucroRow(tr); save();
+});
+grid2.addEventListener('change',function(e){
+  const t=e.target; if(t.dataset&&t.dataset.f==='company'){ const tr=t.closest('tr.item'); const it=items[+tr.dataset.i]; it.company=t.value; updateLucroRow(tr); save(); companyMoved(it); }
+});
+grid2.addEventListener('click',function(e){
+  const b=e.target.closest('[data-act="toggle"]'); if(!b) return;
+  const tr=b.closest('tr.item'); if(tr) openLucroDetail(tr);
+});
+$('#in-search2').addEventListener('input',function(e){ ui.q2=e.target.value; applyFilter2(); });
+$('#in-search2').addEventListener('keydown',function(e){ if(e.key==='Escape'){ ui.q2=''; e.target.value=''; applyFilter2(); } });
+$('#btn-search2-clear').addEventListener('click',function(){ ui.q2=''; $('#in-search2').value=''; applyFilter2(); $('#in-search2').focus(); });
+function buildLucroAOA(numeric){
+  const f=(v,n)=>numeric?(isNaN(v)?'':Math.round(v*Math.pow(10,n))/Math.pow(10,n)):(isNaN(v)?'':dec(v,n));
+  const head=['SKU','Produto','Empresa','Custo','Margem alvo %'];
+  S.channels.forEach(ch=>{ head.push(ch.label+' preço de venda ideal'); head.push(ch.label+' lucro R$'); head.push(ch.label+' lucro %'); head.push(ch.label+' taxas e comissões R$'); head.push(ch.label+' taxas e comissões %'); });
+  const rows=[head];
+  scoped().forEach(function(it){
+    const c=calcAllPriced(it); const co=companyOf(it);
+    const r=[it.sku,it.name,co.name,f(num(it.cost),2),f(effMargin(it),2)];
+    S.channels.forEach(function(ch){ const x=c.res[ch.id]; if(x.ok){ r.push(f(x.ev.price,2)); r.push(f(x.ev.net,2)); r.push(f(x.ev.margin*100,1)); r.push(f(x.fees,2)); r.push(f(x.ev.price>0?x.fees/x.ev.price*100:NaN,1)); } else { r.push(''); r.push(''); r.push(''); r.push(''); r.push(''); } });
+    rows.push(r);
+  });
+  return rows;
+}
+$('#btn-l-copy').addEventListener('click',function(){
+  if(!scoped().length){ toast('Não há itens para copiar.'); return; }
+  const txt=buildLucroAOA(false).map(r=>r.join('\t')).join('\n');
+  const done=()=>toast('Tabela copiada. Cole no Excel ou no Google Planilhas.');
+  const fail=function(){ const b=$('#paste-box'); toast('Seu navegador bloqueou a cópia. Use Exportar Excel.'); };
+  try{ navigator.clipboard.writeText(txt).then(done,fail); }catch(e){ fail(); }
+});
+$('#btn-l-export').addEventListener('click',function(){
+  if(!scoped().length){ toast('Não há itens para exportar.'); return; }
+  if(typeof XLSX==='undefined'){ toast('O gerador de Excel não carregou. Use “Copiar tabela”.'); return; }
+  saveFile('lucro-por-loja'+coFileSuffix()+'.xlsx',xlsxBuffer([{name:'Lucro por loja',aoa:buildLucroAOA(true)}]));
+});
+
+/* ====================== ABAS ====================== */
+function setTab(name){
+  ui.tab=name;
+  $$('.tab').forEach(t=>t.setAttribute('aria-selected',t.dataset.tab===name?'true':'false'));
+  ['itens','lucro','config','formula'].forEach(n=>{ $('#p-'+n).hidden=(n!==name); });
+  if(name==='lucro') renderLucro();
+  if(name==='itens'){ if(ui.dirty||true){ renderTable(); ui.dirty=false; } }
+  if(name==='config') renderConfig();
+  renderCoBar();
+}
+$$('.tab').forEach(t=>t.addEventListener('click',function(){ setTab(t.dataset.tab); }));
+document.addEventListener('click',function(e){ const a=e.target.closest('[data-goto]'); if(a){ e.preventDefault(); setTab(a.dataset.goto); } });
+
+/* ====================== INÍCIO ====================== */
+function showBoot(msg){ const b=document.getElementById('boot'); if(b){ b.querySelector('p').textContent=msg; b.hidden=false; } }
+function hideBoot(){ const b=document.getElementById('boot'); if(b) b.hidden=true; }
+async function boot(){
+  if(!TOKEN){ goLogin(); return; }
+  showBoot('Carregando os seus dados…');
+  try{
+    const me=await api('me',{token:TOKEN});
+    if(!me||!me.ok){ goLogin(me&&me.error==='sessao'?'?expirou=1':''); return; }
+    document.getElementById('who').textContent=me.user.email;
+    const r=await api('load',{token:TOKEN});
+    if(!r||!r.ok){ goLogin('?expirou=1'); return; }
+    if(r.data && hydrate(r.data)){ /* dados do cliente */ }
+    else { S=DEFAULT_S(); items=EXAMPLES(); }
+    ready=true; renderTable(); hideBoot(); setSync('ok');
+    if(!r.data){ dirtyCloud=true; flush(); }
+  }catch(e){
+    showBoot('Não consegui falar com o servidor. Verifique a internet e recarregue a página.');
+    const b=document.getElementById('boot'); if(b) b.querySelector('button').hidden=false;
+  }
+}
+document.getElementById('btn-logout').addEventListener('click',async function(){
+  try{ await flush(); await api('logout',{token:TOKEN}); }catch(e){}
+  goLogin('?saiu=1');
+});
+const dlg=document.getElementById('dlg-senha');
+document.getElementById('btn-senha').addEventListener('click',function(){ document.getElementById('senha-msg').textContent=''; document.getElementById('form-senha').reset(); dlg.showModal(); });
+document.getElementById('senha-cancel').addEventListener('click',function(){ dlg.close(); });
+document.getElementById('form-senha').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const msg=document.getElementById('senha-msg'); const a=document.getElementById('senha-atual').value, n=document.getElementById('senha-nova').value, n2=document.getElementById('senha-nova2').value;
+  if(n!==n2){ msg.textContent='A confirmação não é igual à nova senha.'; return; }
+  if(n.length<8){ msg.textContent='A nova senha precisa ter pelo menos 8 caracteres.'; return; }
+  msg.textContent='Salvando…';
+  try{
+    const r=await api('change-password',{token:TOKEN,old_password:a,new_password:n});
+    if(r.ok){ dlg.close(); toast('Senha alterada.'); }
+    else msg.textContent={senha_atual:'A senha atual não confere.',senha_curta:'A nova senha precisa ter pelo menos 8 caracteres.',sessao:'Sua sessão expirou. Entre de novo.'}[r.error]||'Não foi possível trocar a senha.';
+  }catch(err){ msg.textContent='Sem conexão com o servidor. Tente de novo.'; }
+});
+boot();
+})();
+</script>
+</body>
+</html>
